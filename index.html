@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio</title>
+  <meta name="description" content="Portfolio">
+  <meta name="theme-color" content="#0c0c0d">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/instrument-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip" href="#arbeiten">Zum Inhalt springen</a>
+
+  <!-- Navigation -->
+  <header class="nav" id="nav">
+    <a class="nav__brand" href="#top" data-cursor-hover><span data-bind="initials">VN</span></a>
+    <nav class="nav__links" aria-label="Hauptnavigation">
+      <a href="#arbeiten" data-label="Arbeiten"><span>Arbeiten</span></a>
+      <a href="#ueber-mich" data-label="Über mich"><span>Über mich</span></a>
+      <a href="#werdegang" data-label="Werdegang"><span>Werdegang</span></a>
+      <a href="#kontakt" data-label="Kontakt"><span>Kontakt</span></a>
+    </nav>
+    <div class="nav__clock mono" aria-hidden="true"><span data-bind="location"></span> <span id="clock">--:--</span></div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero" aria-label="Einleitung">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__top mono">
+        <span>Portfolio — <span id="year"></span></span>
+        <span class="hero__status" id="status"><i></i><span data-bind="availableText"></span></span>
+      </div>
+      <h1 class="hero__name">
+        <span class="hero__line" id="firstName"></span>
+        <span class="hero__line hero__line--italic" id="lastName"></span>
+      </h1>
+      <div class="hero__bottom">
+        <p class="hero__role"><span data-bind="role"></span><br><span class="muted">aus <span data-bind="location"></span></span></p>
+        <p class="hero__intro" data-bind="intro"></p>
+        <a class="hero__scroll mono" href="#arbeiten" aria-label="Zu den Arbeiten scrollen"><span>Scroll</span><i></i></a>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+
+    <!-- Arbeiten -->
+    <section class="section work" id="arbeiten">
+      <div class="section__head">
+        <h2 class="section__title reveal">Ausgewählte <em>Arbeiten</em> <sup class="mono" id="workCount"></sup></h2>
+        <div class="work__controls reveal">
+          <div class="filters" id="filters" role="group" aria-label="Nach Kategorie filtern"></div>
+          <div class="viewtoggle" role="group" aria-label="Ansicht">
+            <button type="button" class="is-active" data-view="grid" aria-pressed="true" aria-label="Rasteransicht">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="6" height="6"/><rect x="9" y="1" width="6" height="6"/><rect x="1" y="9" width="6" height="6"/><rect x="9" y="9" width="6" height="6"/></svg>
+            </button>
+            <button type="button" data-view="list" aria-pressed="false" aria-label="Listenansicht">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="2" width="14" height="1.5"/><rect x="1" y="7.25" width="14" height="1.5"/><rect x="1" y="12.5" width="14" height="1.5"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="list" id="list" hidden></div>
+    </section>
+
+    <!-- Über mich -->
+    <section class="section about" id="ueber-mich">
+      <div class="section__head"><h2 class="section__title reveal">Über <em>mich</em></h2></div>
+      <div class="about__grid">
+        <figure class="about__portrait reveal" id="portrait"></figure>
+        <div class="about__body">
+          <p class="about__statement reveal" data-bind="statement"></p>
+          <div class="about__text reveal" id="aboutText"></div>
+          <div class="about__lists reveal">
+            <div><h3 class="mono label">Fähigkeiten</h3><ul class="chips" id="skills"></ul></div>
+            <div><h3 class="mono label">Software</h3><ul class="chips" id="tools"></ul></div>
+          </div>
+          <a class="btn reveal" id="cvBtn" href="#" download data-cursor-hover>
+            <span>Lebenslauf herunterladen</span><span class="btn__icon" aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Werdegang -->
+    <section class="section cv" id="werdegang">
+      <div class="section__head"><h2 class="section__title reveal">Werde<em>gang</em></h2></div>
+      <div id="timeline"></div>
+    </section>
+
+    <!-- Kontakt -->
+    <section class="section contact" id="kontakt">
+      <p class="mono label reveal">Kontakt</p>
+      <h2 class="contact__title reveal">Lass uns etwas <em>Besonderes</em> gestalten.</h2>
+      <button type="button" class="contact__mail reveal" id="mail" data-cursor="Kopieren">
+        <span data-bind="email"></span>
+      </button>
+      <p class="contact__hint mono muted reveal">Klick kopiert die Adresse · <a id="mailto" href="#">E-Mail öffnen ↗</a></p>
+      <ul class="socials reveal" id="socials"></ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="mono">© <span id="footYear"></span> <span data-bind="fullName"></span></span>
+    <nav class="mono" aria-label="Rechtliches">
+      <a href="impressum.html">Impressum</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="#top">Nach oben ↑</a>
+    </nav>
+  </footer>
+
+  <!-- Projekt-Ansicht -->
+  <div class="project" id="project" role="dialog" aria-modal="true" aria-labelledby="pTitle" hidden>
+    <div class="project__progress" id="pProgress"></div>
+    <div class="project__bar">
+      <span class="mono" id="pCounter"></span>
+      <button type="button" class="project__close mono" id="pClose" data-cursor-hover>Schließen <span aria-hidden="true">✕</span></button>
+    </div>
+    <div class="project__scroll" id="pScroll"></div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Bildansicht" hidden>
+    <img id="lbImg" alt="">
+    <p class="lightbox__caption mono" id="lbCaption"></p>
+    <button type="button" class="lightbox__btn lightbox__btn--prev" id="lbPrev" aria-label="Vorheriges Bild">←</button>
+    <button type="button" class="lightbox__btn lightbox__btn--next" id="lbNext" aria-label="Nächstes Bild">→</button>
+    <button type="button" class="lightbox__close mono" id="lbClose">Schließen ✕</button>
+  </div>
+
+  <!-- Spielereien -->
+  <div class="float-preview" id="floatPreview" aria-hidden="true"></div>
+  <div class="cursor" id="cursor" aria-hidden="true"><span id="cursorLabel"></span></div>
+  <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <script src="content.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
