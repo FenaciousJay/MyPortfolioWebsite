@@ -94,19 +94,20 @@ window.PORTFOLIO = {
      cover     → Vorschaubild (am besten quadratisch, mind. 1200 × 1200 px)
      featured  → true = Kachel wird im Raster doppelt so groß
      palette   → zwei/drei Farben für den Platzhalter, solange kein Bild da ist
-     info      → beliebige Angaben, die links neben der Beschreibung stehen
-     media     → Bilder, Videos usw. auf der Projektseite. Mögliche Typen:
+     info      → beliebige Angaben (Rolle, Kunde, Software …) unter der Beschreibung
+     media     → weitere Bilder, Videos usw. Auf der Projektseite erscheinen sie als
+                 anklickbare Vorschaubilder unter dem großen Bild. Mögliche Typen:
 
-       { type: "image",   src: "media/...jpg", caption: "", size: "full" | "half" }
-       { type: "video",   src: "media/...mp4", poster: "", size: "full" | "half" }   (läuft stumm als Loop)
+       { type: "image",   src: "media/...jpg", caption: "" }
+       { type: "video",   src: "media/...mp4", poster: "" }   (läuft stumm als Loop)
        { type: "youtube", id: "VIDEO-ID", caption: "" }
        { type: "vimeo",   id: "123456", caption: "" }
        { type: "embed",   url: "https://sketchfab.com/models/.../embed", label: "Sketchfab", caption: "" }
        { type: "compare", before: "media/...wire.jpg", after: "media/...render.jpg",
                           beforeLabel: "Wireframe", afterLabel: "Render" }
-       { type: "text",    title: "Prozess", text: "..." }
+       { type: "text",    title: "Prozess", text: "..." }   (erscheint als Absatz im Textbereich)
 
-     Zwei "half"-Elemente hintereinander stehen nebeneinander.
+     Das Cover ist automatisch das erste Bild. Klick auf das große Bild öffnet die Vollbildansicht.
      YouTube/Vimeo/Embeds laden erst nach Klick (datenschutzfreundlich).
      ------------------------------------------------------------------------ */
   projects: [
@@ -131,8 +132,8 @@ window.PORTFOLIO = {
       ],
       media: [
         { type: "image", src: "media/projekte/nebula-drift/01.jpg", caption: "Hauptansicht" },
-        { type: "image", src: "media/projekte/nebula-drift/02.jpg", size: "half", caption: "Detail Cockpit" },
-        { type: "image", src: "media/projekte/nebula-drift/03.jpg", size: "half", caption: "Detail Antrieb" },
+        { type: "image", src: "media/projekte/nebula-drift/02.jpg", caption: "Detail Cockpit" },
+        { type: "image", src: "media/projekte/nebula-drift/03.jpg", caption: "Detail Antrieb" },
         { type: "compare", before: "media/projekte/nebula-drift/wireframe.jpg", after: "media/projekte/nebula-drift/01.jpg",
           beforeLabel: "Wireframe", afterLabel: "Render" },
         { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
@@ -151,8 +152,8 @@ window.PORTFOLIO = {
       description: ["Projektbeschreibung hier einfügen."],
       media: [
         { type: "image", src: "media/projekte/kintsugi/01.jpg" },
-        { type: "image", src: "media/projekte/kintsugi/02.jpg", size: "half" },
-        { type: "image", src: "media/projekte/kintsugi/03.jpg", size: "half" },
+        { type: "image", src: "media/projekte/kintsugi/02.jpg" },
+        { type: "image", src: "media/projekte/kintsugi/03.jpg" },
       ],
     },
     {
@@ -226,8 +227,8 @@ window.PORTFOLIO = {
       info: { "Rolle": "Produktvisualisierung", "Kunde": "Kunde Name", "Software": "Cinema 4D, Octane" },
       description: ["Projektbeschreibung hier einfügen."],
       media: [
-        { type: "image", src: "media/projekte/orbit/01.jpg", size: "half" },
-        { type: "image", src: "media/projekte/orbit/02.jpg", size: "half" },
+        { type: "image", src: "media/projekte/orbit/01.jpg" },
+        { type: "image", src: "media/projekte/orbit/02.jpg" },
       ],
     },
     {

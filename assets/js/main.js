@@ -49,22 +49,28 @@
       `linear-gradient(${Math.round(r(4) * 360)}deg, ${c}, #0c0c0d)`;
   }
 
-  function media(src, { seed = src, palette, alt = "", cls = "", natural = false, ratio, eager = false, video = false, poster } = {}) {
-    let style = placeholderBg(seed || "x", palette);
-    if (ratio) style += `;--ratio:${ratio}`;
+  function media(src, { seed = src, palette, alt = "", cls = "", eager = false, video = false, poster, still = false } = {}) {
+    const style = placeholderBg(seed || "x", palette);
     let inner = "";
     if (src && video) {
-      inner = `<video src="${esc(src)}"${poster ? ` poster="${esc(poster)}"` : ""} muted loop playsinline autoplay preload="metadata"></video>`;
+      inner = still
+        ? `<video src="${esc(src)}#t=0.1" muted playsinline preload="metadata"></video>`
+        : `<video src="${esc(src)}"${poster ? ` poster="${esc(poster)}"` : ""} muted loop playsinline autoplay preload="metadata"></video>`;
     } else if (src) {
       inner = `<img src="${esc(src)}" alt="${esc(alt)}"${eager ? "" : ' loading="lazy"'} decoding="async">`;
     }
-    const classes = ["ph", natural && "ph--natural", !src && "is-missing", cls].filter(Boolean).join(" ");
+    const classes = ["ph", !src && "is-missing", cls].filter(Boolean).join(" ");
     return `<div class="${classes}" style="${esc(style)}">${inner}<span class="ph__hint">+ ${esc(src || "Datei fehlt")}</span></div>`;
   }
 
   // Bilder/Videos melden, ob sie geladen wurden – sonst bleibt der Platzhalter.
   const isPh = (t) => t.parentElement && t.parentElement.classList.contains("ph");
-  document.addEventListener("load", (e) => { if (e.target.tagName === "IMG" && isPh(e.target)) e.target.parentElement.classList.add("is-loaded"); }, true);
+  const loadedSrc = new Set();
+  document.addEventListener("load", (e) => {
+    if (e.target.tagName !== "IMG" || !isPh(e.target)) return;
+    e.target.parentElement.classList.add("is-loaded");
+    loadedSrc.add(e.target.getAttribute("src"));
+  }, true);
   document.addEventListener("loadeddata", (e) => { if (e.target.tagName === "VIDEO" && isPh(e.target)) e.target.parentElement.classList.add("is-loaded"); }, true);
   document.addEventListener("error", (e) => {
     const t = e.target;
@@ -136,7 +142,7 @@
   function buildMarquee() {
     const words = list(D.disciplines);
     if (!words.length) { track.parentElement.hidden = true; return; }
-    const unit = words.map((w) => `<span>${esc(w)}<b>✦</b></span>`).join("");
+    const unit = words.map((w) => `<span>${esc(w)}<b>·</b></span>`).join("");
     track.innerHTML = unit;
     marquee.unit = track.scrollWidth || 1;
     track.innerHTML = unit.repeat(Math.ceil((innerWidth * 2) / marquee.unit) + 1);
@@ -308,85 +314,143 @@
     lastY = y;
   }, { passive: true });
 
-  /* ---------- Projekt-Ansicht ------------------------------------------------ */
+  /* ---------- Projekt-Ansicht ------------------------------------------------
+     Aufbau: großes Bild ("Bühne") + Vorschaubilder links, Titel & Text rechts.
+     Auf dem Desktop passt alles auf einen Bildschirm, ohne zu scrollen.
+     ------------------------------------------------------------------------- */
   const projEl = $("#project");
   const pScroll = $("#pScroll");
   const FULL = "inset(0% 0% 0% 0% round 0px)";
   let current = null;
   let lastTrigger = null;
   let closeAnim = null;
+  let pv = null; // { p, items, i } – aktuelles Projekt und gewähltes Medium
 
-  function embedHTML(url, label, item, half) {
-    const cap = item.caption ? `<figcaption class="mono">${esc(item.caption)}</figcaption>` : "";
-    const ratio = esc(item.ratio || "16 / 9");
+  const kindOf = (item) => item.type || "image";
+  const BADGES = { video: "▶", youtube: "▶", vimeo: "▶", embed: "◇", compare: "↔" };
+
+  // Alle Medien, die auf der Bühne gezeigt werden können (Titelbild zuerst)
+  function stageItems(p) {
+    const hints = site.showPlaceholderHints !== false;
+    const out = p.cover ? [{ type: "image", src: p.cover }] : [];
+    list(p.media).forEach((m) => {
+      if (typeof m === "string") m = { type: "image", src: m };
+      const k = kindOf(m);
+      if (k === "text") return;
+      if (k === "image" && m.src && m.src === p.cover) { out[0] = m; return; } // Titelbild mit Bildunterschrift
+      if (!hints && ((k === "youtube" || k === "vimeo") ? !m.id : k === "embed" ? !m.url : false)) return;
+      out.push(m);
+    });
+    return out.length ? out : [{ type: "image", src: "" }];
+  }
+
+  function embedHTML(url, label) {
     if (!url) {
-      if (site.showPlaceholderHints === false) return "";
-      return `<figure class="p-item${half} reveal"><div class="embed" style="--ratio:${ratio}"><div class="embed__consent">
-        <span class="mono">${esc(label)}</span><small>Noch keine ${esc(label)}-ID bzw. URL in content.js eingetragen.</small></div></div>${cap}</figure>`;
+      return `<div class="embed"><div class="embed__consent">
+        <span class="mono">${esc(label)}</span><small>Noch keine ${esc(label)}-ID bzw. URL in content.js eingetragen.</small></div></div>`;
     }
-    return `<figure class="p-item${half} reveal"><div class="embed" style="--ratio:${ratio}" data-src="${esc(url)}" data-title="${esc(label)}">
+    return `<div class="embed" data-src="${esc(url)}" data-title="${esc(label)}">
       <button type="button" class="embed__consent" data-cursor="Abspielen">
         <span class="embed__play" aria-hidden="true">▶</span>
         <span class="mono">${esc(label)} laden</span>
         <small>Beim Laden werden Daten (z. B. deine IP-Adresse) an ${esc(label)} übertragen.</small>
-      </button></div>${cap}</figure>`;
+      </button></div>`;
   }
 
-  function itemHTML(item, i, p) {
-    if (typeof item === "string") item = { type: "image", src: item };
-    const half = item.size === "half" ? " p-item--half" : "";
-    const cap = item.caption ? `<figcaption class="mono">${esc(item.caption)}</figcaption>` : "";
-    const opts = { seed: `${p.slug}-${i}`, palette: p.palette, natural: true, ratio: item.ratio };
-    switch (item.type || "image") {
-      case "image":
-        return `<figure class="p-item${half} reveal">${media(item.src, { ...opts, alt: item.alt || item.caption || p.title })}${cap}</figure>`;
+  function stageHTML(item, i, p) {
+    const seed = `${p.slug}-${i}`;
+    switch (kindOf(item)) {
       case "video":
-        return `<figure class="p-item${half} reveal">${media(item.src, { ...opts, video: true, poster: item.poster })}${cap}</figure>`;
+        return media(item.src, { seed, palette: p.palette, video: true, poster: item.poster });
       case "youtube":
-        return embedHTML(item.id && `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0`, "YouTube", item, half);
+        return embedHTML(item.id && `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0`, "YouTube");
       case "vimeo":
-        return embedHTML(item.id && `https://player.vimeo.com/video/${encodeURIComponent(item.id)}?autoplay=1&dnt=1`, "Vimeo", item, half);
+        return embedHTML(item.id && `https://player.vimeo.com/video/${encodeURIComponent(item.id)}?autoplay=1&dnt=1`, "Vimeo");
       case "embed":
-        return embedHTML(item.url, item.label || "Externer Inhalt", item, half);
+        return embedHTML(item.url, item.label || "Externer Inhalt");
       case "compare":
-        return `<figure class="p-item${half} reveal">
-          <div class="compare" style="--ratio:${esc(item.ratio || "16 / 9")}" tabindex="0" role="slider" aria-label="Vorher-Nachher-Vergleich" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-cursor="Ziehen">
-            ${media(item.before, { seed: `${p.slug}-${i}a`, palette: [...list(p.palette)].reverse(), alt: item.beforeLabel })}
-            ${media(item.after, { seed: `${p.slug}-${i}b`, palette: p.palette, alt: item.afterLabel, cls: "compare__after" })}
+        return `<div class="compare" tabindex="0" role="slider" aria-label="Vorher-Nachher-Vergleich" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-cursor="Ziehen">
+            ${media(item.before, { seed: `${seed}a`, palette: [...list(p.palette)].reverse(), alt: item.beforeLabel, eager: true })}
+            ${media(item.after, { seed: `${seed}b`, palette: p.palette, alt: item.afterLabel, cls: "compare__after", eager: true })}
             <span class="compare__handle"></span>
             <span class="compare__label compare__label--l mono">${esc(item.beforeLabel || "Vorher")}</span>
             <span class="compare__label compare__label--r mono">${esc(item.afterLabel || "Nachher")}</span>
-          </div>${cap}</figure>`;
-      case "text":
-        return `<div class="p-item p-text reveal"><h3>${esc(item.title)}</h3><p>${item.text || ""}</p></div>`;
+          </div>`;
       default:
-        return "";
+        return media(item.src, { seed, palette: p.palette, alt: item.alt || item.caption || p.title, eager: true });
     }
+  }
+
+  function thumbHTML(item, i, p) {
+    const k = kindOf(item);
+    const seed = k === "compare" ? `${p.slug}-${i}b` : `${p.slug}-${i}`;
+    const src = k === "image" ? item.src : k === "compare" ? item.after : k === "video" ? (item.poster || item.src) : "";
+    const still = k === "video" && !item.poster;
+    const badge = BADGES[k] ? `<span class="pv__badge" aria-hidden="true">${BADGES[k]}</span>` : "";
+    const label = item.caption || item.label || `Medium ${i + 1}`;
+    return `<button type="button" class="pv__thumb" data-i="${i}" aria-label="${esc(label)} anzeigen" title="${esc(label)}">
+      ${media(src, { seed, palette: p.palette, video: still, still })}${badge}</button>`;
   }
 
   function projectHTML(p, idx) {
     const next = projects[(idx + 1) % projects.length];
     const info = Object.entries(p.info || {});
-    const desc = list(p.description);
+    const texts = list(p.media).filter((m) => m && kindOf(m) === "text");
+    const items = stageItems(p);
+    const many = items.length > 1;
     return `
-      <header class="p-hero">
-        <div class="p-hero__meta mono"><b>${pad(idx + 1)}</b><span>${esc(p.category)}</span><span>${esc(p.year)}</span></div>
-        <h1 class="p-hero__title" id="pTitle">${splitHTML(p.title)}</h1>
-        ${p.subtitle ? `<p class="p-hero__sub">${esc(p.subtitle)}</p>` : ""}
-      </header>
-      <figure class="p-cover">${media(p.cover, { seed: p.slug, palette: p.palette, alt: p.title, eager: true })}</figure>
-      ${info.length || desc.length ? `
-      <section class="p-info">
-        <dl class="p-facts reveal">${info.map(([k, v]) => `<div><dt class="mono">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
-        <div class="p-desc reveal">${desc.map((t) => `<p>${t}</p>`).join("")}</div>
-      </section>` : ""}
-      <section class="p-gallery">${list(p.media).map((m, i) => itemHTML(m, i, p)).join("")}</section>
-      ${projects.length > 1 ? `
-      <a class="p-next" href="#/projekt/${esc(next.slug)}" data-cursor="Weiter">
-        ${media(next.cover, { seed: next.slug, palette: next.palette })}
-        <span class="p-next__label mono">Nächstes Projekt →</span>
-        <div class="p-next__title">${esc(next.title)}</div>
-      </a>` : '<div style="height:120px"></div>'}`;
+      <div class="pv${many ? "" : " pv--single"}">
+        <header class="pv__head">
+          <div class="pv__meta mono"><b>${pad(idx + 1)}</b><span>${esc(p.category)}</span><span>${esc(p.year)}</span></div>
+          <h1 class="pv__title" id="pTitle">${splitHTML(p.title)}</h1>
+          ${p.subtitle ? `<p class="pv__sub">${esc(p.subtitle)}</p>` : ""}
+        </header>
+
+        <div class="pv__stagewrap">
+          <div class="pv__stage" id="pStage"></div>
+          <p class="pv__caption mono" id="pCaption"></p>
+          ${many ? `
+          <button type="button" class="pv__arrow pv__arrow--prev" data-step="-1" aria-label="Vorheriges Bild">←</button>
+          <button type="button" class="pv__arrow pv__arrow--next" data-step="1" aria-label="Nächstes Bild">→</button>` : ""}
+        </div>
+
+        ${many ? `<div class="pv__thumbs" id="pThumbs">${items.map((it, i) => thumbHTML(it, i, p)).join("")}</div>` : ""}
+
+        <div class="pv__body">
+          ${list(p.description).map((t) => `<p class="pv__desc">${t}</p>`).join("")}
+          ${info.length ? `<dl class="pv__facts">${info.map(([k, v]) => `<div><dt class="mono">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+          ${texts.map((t) => `<div class="pv__text"><h3 class="mono">${esc(t.title)}</h3><p>${t.text || ""}</p></div>`).join("")}
+          ${projects.length > 1 ? `
+          <a class="pv__next" href="#/projekt/${esc(next.slug)}">
+            <span class="mono">Nächstes Projekt</span>
+            <span class="pv__next-title">${esc(next.title)} <i aria-hidden="true">→</i></span>
+          </a>` : ""}
+        </div>
+      </div>`;
+  }
+
+  // Ein Medium auf die Bühne holen
+  function setStage(i, animate = true) {
+    if (!pv) return;
+    const n = pv.items.length;
+    pv.i = (i + n) % n;
+    const item = pv.items[pv.i];
+    const stage = $("#pStage", pScroll);
+    stage.innerHTML = stageHTML(item, pv.i, pv.p);
+    stage.dataset.kind = kindOf(item);
+    $("#pCaption", pScroll).textContent = [n > 1 ? `${pad(pv.i + 1)} / ${pad(n)}` : "", item.caption].filter(Boolean).join(" — ");
+    if (animate && !reduce()) {
+      stage.firstElementChild?.animate([{ opacity: 0, transform: "scale(.985)" }, { opacity: 1, transform: "none" }],
+        { duration: 500, easing: "cubic-bezier(.22,1,.36,1)" });
+    }
+    const thumbs = $("#pThumbs", pScroll);
+    if (!thumbs) return;
+    $$(".pv__thumb", thumbs).forEach((t) => {
+      const on = +t.dataset.i === pv.i;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-current", on);
+      if (on) thumbs.scrollTo({ left: t.offsetLeft - thumbs.clientWidth / 2 + t.offsetWidth / 2, behavior: reduce() ? "auto" : "smooth" });
+    });
   }
 
   // Rechteck eines sichtbaren Elements als clip-path – für den "Aufzieh"-Effekt
@@ -403,12 +467,16 @@
     current = p;
     if (closeAnim) { closeAnim.cancel(); closeAnim = null; }
     const idx = projects.indexOf(p);
-    $("#pCounter").textContent = `${pad(idx + 1)} / ${pad(projects.length)} — ${p.title}`;
+    const n = projects.length;
+    $("#pCounter").textContent = `${pad(idx + 1)} / ${pad(n)} — ${p.title}`;
+    $("#pPrev").href = `#/projekt/${projects[(idx - 1 + n) % n].slug}`;
+    $("#pNext").href = `#/projekt/${projects[(idx + 1) % n].slug}`;
+    $("#pPrev").hidden = $("#pNext").hidden = n < 2;
     pScroll.innerHTML = projectHTML(p, idx);
     pScroll.scrollTop = 0;
+    pv = { p, items: stageItems(p), i: 0 };
+    setStage(0, false);
     document.title = `${p.title} — ${fullName || baseTitle}`;
-    observe(pScroll);
-    onProjectScroll();
     preview.classList.remove("is-visible");
     closeLightbox();
 
@@ -416,7 +484,7 @@
     const show = () => requestAnimationFrame(() => requestAnimationFrame(() => projEl.classList.add("is-shown")));
 
     if (switching) {
-      if (!reduce()) pScroll.animate([{ opacity: 0, transform: "translateY(40px)" }, { opacity: 1, transform: "none" }], { duration: 700, easing: "cubic-bezier(.22,1,.36,1)" });
+      if (!reduce()) pScroll.animate([{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "none" }], { duration: 600, easing: "cubic-bezier(.22,1,.36,1)" });
       show();
       return;
     }
@@ -424,7 +492,7 @@
     root.classList.add("is-locked");
     if (!reduce()) {
       const from = clipFrom(lastTrigger) || "inset(100% 0% 0% 0% round 0px)";
-      projEl.animate([{ clipPath: from }, { clipPath: FULL }], { duration: 900, easing: "cubic-bezier(.76,0,.24,1)" });
+      projEl.animate([{ clipPath: from }, { clipPath: FULL }], { duration: 850, easing: "cubic-bezier(.76,0,.24,1)" });
     }
     show();
     $("#pClose").focus({ preventScroll: true });
@@ -442,13 +510,14 @@
       projEl.hidden = true;
       projEl.classList.remove("is-shown");
       pScroll.innerHTML = "";
+      pv = null;
       root.classList.remove("is-locked");
     };
     root.classList.remove("is-locked");
     if (reduce()) finish();
     else {
       closeAnim = projEl.animate([{ clipPath: FULL }, { clipPath: clipFrom(target) || "inset(100% 0% 0% 0% round 0px)" }],
-        { duration: 750, easing: "cubic-bezier(.76,0,.24,1)" });
+        { duration: 700, easing: "cubic-bezier(.76,0,.24,1)" });
       closeAnim.onfinish = finish;
       setTimeout(finish, 1000); // Sicherheitsnetz, falls der Browser Animationen drosselt
     }
@@ -487,18 +556,12 @@
   addEventListener("hashchange", route);
   $("#pClose").addEventListener("click", requestClose);
 
-  // Fortschrittsbalken + leichte Parallaxe des Titelbilds
-  const progress = $("#pProgress");
-  function onProjectScroll() {
-    const max = pScroll.scrollHeight - pScroll.clientHeight;
-    progress.style.transform = `scaleX(${max > 0 ? pScroll.scrollTop / max : 0})`;
-    const cover = $(".p-cover .ph", pScroll);
-    if (cover && !reduce()) cover.style.setProperty("--ps", (1.12 - Math.min(pScroll.scrollTop / 900, 1) * 0.12).toFixed(4));
-  }
-  pScroll.addEventListener("scroll", onProjectScroll, { passive: true });
-
-  // Klicks innerhalb der Projektansicht: Embeds laden, Bilder vergrößern
+  // Klicks in der Projektansicht: Vorschaubild wählen, blättern, Embeds laden, vergrößern
   pScroll.addEventListener("click", (e) => {
+    const thumb = e.target.closest(".pv__thumb");
+    if (thumb) { setStage(+thumb.dataset.i); return; }
+    const arrow = e.target.closest(".pv__arrow");
+    if (arrow) { setStage(pv.i + +arrow.dataset.step); return; }
     const consent = e.target.closest("button.embed__consent");
     if (consent) {
       const box = consent.parentElement;
@@ -510,8 +573,7 @@
       box.replaceChildren(f);
       return;
     }
-    const img = e.target.closest(".ph.is-loaded > img");
-    if (img && !img.closest(".compare, .p-next")) openLightbox(img);
+    if (e.target.closest(".pv__stage .ph.is-loaded > img") && !e.target.closest(".compare")) openLightbox();
   });
 
   // Vorher/Nachher-Regler
@@ -536,34 +598,28 @@
     setCompare(c, ((e.clientX - r.left) / r.width) * 100);
   });
   addEventListener("pointerup", () => { dragging = null; });
-  pScroll.addEventListener("keydown", (e) => {
-    const c = e.target.closest(".compare");
-    if (!c || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
-    e.preventDefault();
-    setCompare(c, +c.getAttribute("aria-valuenow") + (e.key === "ArrowRight" ? 5 : -5));
-  });
 
-  /* ---------- Lightbox ------------------------------------------------------- */
+  /* ---------- Lightbox (Vollbild) -------------------------------------------- */
   const lb = $("#lightbox");
   const lbImg = $("#lbImg");
   let lbItems = [];
   let lbIndex = 0;
-  function openLightbox(img) {
-    lbItems = $$(".p-cover .ph.is-loaded > img, .p-item .ph.is-loaded > img", pScroll).filter((i) => !i.closest(".compare"));
-    lbIndex = Math.max(0, lbItems.indexOf(img));
+  function openLightbox() {
+    lbItems = pv.items.map((it, i) => ({ it, i })).filter(({ it }) => kindOf(it) === "image" && loadedSrc.has(it.src));
+    if (!lbItems.length) return;
+    lbIndex = Math.max(0, lbItems.findIndex((x) => x.i === pv.i));
     showLightbox();
     lb.hidden = false;
     $("#lbClose").focus({ preventScroll: true });
   }
   function showLightbox() {
-    const img = lbItems[lbIndex];
-    if (!img) return;
-    lbImg.src = img.currentSrc || img.src;
-    lbImg.alt = img.alt;
-    const cap = img.closest("figure")?.querySelector("figcaption")?.textContent || "";
-    $("#lbCaption").textContent = `${pad(lbIndex + 1)} / ${pad(lbItems.length)}${cap ? ` — ${cap}` : ""}`;
+    const { it, i } = lbItems[lbIndex];
+    lbImg.src = it.src;
+    lbImg.alt = it.alt || it.caption || "";
+    $("#lbCaption").textContent = `${pad(lbIndex + 1)} / ${pad(lbItems.length)}${it.caption ? ` — ${it.caption}` : ""}`;
     lbImg.style.animation = "none"; void lbImg.offsetWidth; lbImg.style.animation = "";
     $("#lbPrev").hidden = $("#lbNext").hidden = lbItems.length < 2;
+    if (pv && pv.i !== i) setStage(i, false); // Bühne im Hintergrund mitführen
   }
   const lbStep = (d) => { lbIndex = (lbIndex + d + lbItems.length) % lbItems.length; showLightbox(); };
   function closeLightbox() { if (!lb.hidden) { lb.hidden = true; lbImg.removeAttribute("src"); } }
@@ -580,7 +636,14 @@
       if (e.key === "ArrowRight") lbStep(1);
       return;
     }
-    if (current && e.key === "Escape") requestClose();
+    if (!current) return;
+    if (e.key === "Escape") requestClose();
+    if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && pv) {
+      e.preventDefault();
+      const c = e.target.closest && e.target.closest(".compare");
+      if (c) setCompare(c, +c.getAttribute("aria-valuenow") + (e.key === "ArrowRight" ? 5 : -5));
+      else if (pv.items.length > 1) setStage(pv.i + (e.key === "ArrowRight" ? 1 : -1));
+    }
   });
   document.addEventListener("focusin", (e) => {
     if (!lb.hidden && !lb.contains(e.target)) $("#lbClose").focus();
@@ -600,7 +663,7 @@
       const t = e.target;
       const labelled = t.closest("[data-cursor]");
       let label = labelled && labelled.dataset.cursor;
-      if (!label && t.matches(".project .ph.is-loaded > img") && !t.closest(".compare, .p-next")) label = "Zoom";
+      if (!label && t.matches(".pv__stage .ph.is-loaded > img") && !t.closest(".compare")) label = "Zoom";
       cursorLabel.textContent = label || "";
       cursor.classList.toggle("is-label", !!label);
       cursor.classList.toggle("is-hover", !label && !!t.closest("a, button, [data-cursor-hover], .chips li"));
