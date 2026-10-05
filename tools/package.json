@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-medien",
+  "private": true,
+  "description": "Hilfsskript: bereitet Bilder aus media-original/ für die Website auf",
+  "type": "module",
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

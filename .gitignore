@@ -1,0 +1,5 @@
+# Originaldateien bleiben nur lokal (siehe README)
+media-original/
+
+# Hilfsprogramme für das Medien-Skript
+tools/node_modules/

@@ -28,7 +28,24 @@
 
   const P = D.person || {};
   const site = D.site || {};
+
+  /* ---------- Automatisch erzeugte Medien (media.js) ------------------------
+     Das Medien-Skript legt Bilder & Videos aus "media-original/" in media.js ab.
+     Angaben, die du von Hand in content.js machst, haben Vorrang.
+     ------------------------------------------------------------------------- */
+  const AUTO = window.PORTFOLIO_MEDIA || {};
+  D.projects = list(D.projects);
+  Object.entries(AUTO.projects || {}).forEach(([slug, a]) => {
+    let p = D.projects.find((x) => x && x.slug === slug);
+    if (!p) { p = { slug, title: a.title || slug }; D.projects.push(p); } // Ordner ohne Eintrag in content.js
+    if (!p.cover && a.cover) { p.cover = a.cover; p.thumb = p.thumb || a.thumb; }
+    p.media = [...list(a.media), ...list(p.media)];
+  });
+  if (!P.portrait && AUTO.portrait) P.portrait = AUTO.portrait;
+  if (!P.cv && AUTO.cv) P.cv = AUTO.cv;
+
   const projects = list(D.projects).filter((p) => p && p.slug);
+  const folderHint = (p) => `Bilder in media-original/projekte/${p.slug}/ legen`;
   const fullName = [P.firstName, P.lastName].filter(Boolean).join(" ");
   const baseTitle = site.title || fullName || "Portfolio";
 
@@ -49,18 +66,16 @@
       `linear-gradient(${Math.round(r(4) * 360)}deg, ${c}, #0c0c0d)`;
   }
 
-  function media(src, { seed = src, palette, alt = "", cls = "", eager = false, video = false, poster, still = false } = {}) {
+  function media(src, { seed = src, palette, alt = "", cls = "", eager = false, video = false, poster, hint } = {}) {
     const style = placeholderBg(seed || "x", palette);
     let inner = "";
     if (src && video) {
-      inner = still
-        ? `<video src="${esc(src)}#t=0.1" muted playsinline preload="metadata"></video>`
-        : `<video src="${esc(src)}"${poster ? ` poster="${esc(poster)}"` : ""} muted loop playsinline autoplay preload="metadata"></video>`;
+      inner = `<video src="${esc(src)}"${poster ? ` poster="${esc(poster)}"` : ""} muted loop playsinline autoplay preload="metadata"></video>`;
     } else if (src) {
       inner = `<img src="${esc(src)}" alt="${esc(alt)}"${eager ? "" : ' loading="lazy"'} decoding="async">`;
     }
     const classes = ["ph", !src && "is-missing", cls].filter(Boolean).join(" ");
-    return `<div class="${classes}" style="${esc(style)}">${inner}<span class="ph__hint">+ ${esc(src || "Datei fehlt")}</span></div>`;
+    return `<div class="${classes}" style="${esc(style)}">${inner}<span class="ph__hint">+ ${esc(src || hint || "Datei fehlt")}</span></div>`;
   }
 
   // Bilder/Videos melden, ob sie geladen wurden – sonst bleibt der Platzhalter.
@@ -142,7 +157,7 @@
 
   grid.innerHTML = projects.map((p, i) => `
     <a class="card${p.featured ? " card--featured" : ""} reveal" href="#/projekt/${esc(p.slug)}" data-slug="${esc(p.slug)}" data-cat="${esc(p.category)}" data-cursor="Ansehen" style="--d:${(i % 4) * 70}ms">
-      ${media(p.cover, { seed: p.slug, palette: p.palette, alt: p.title })}
+      ${media(p.thumb || p.cover, { seed: p.slug, palette: p.palette, alt: p.title, hint: folderHint(p) })}
       <span class="card__index mono">${pad(i + 1)}</span>
       <div class="card__info">
         <span class="card__cat mono">${esc(p.category)}${p.year ? ` · ${esc(p.year)}` : ""}</span>
@@ -233,7 +248,7 @@
       if (!row) return;
       if (prev.slug !== row.dataset.slug) {
         const p = projects.find((x) => x.slug === row.dataset.slug);
-        preview.innerHTML = media(p.cover, { seed: p.slug, palette: p.palette });
+        preview.innerHTML = media(p.thumb || p.cover, { seed: p.slug, palette: p.palette });
         preview.style.setProperty("--fr", `${(Math.random() * 8 - 4).toFixed(1)}deg`);
         prev.slug = row.dataset.slug;
       }
@@ -246,7 +261,7 @@
 
   /* ---------- Über mich ------------------------------------------------------ */
   const about = D.about || {};
-  $("#portrait").innerHTML = media(P.portrait, { seed: "portrait", palette: ["#5a5a62", site.accent || "#ff5a36", "#121214"], alt: fullName });
+  $("#portrait").innerHTML = media(P.portrait, { seed: "portrait", palette: ["#5a5a62", site.accent || "#ff5a36", "#121214"], alt: fullName, hint: "Porträt in media-original/ueber-mich/ legen" });
   $("#aboutText").innerHTML = list(about.text).map((t) => `<p>${t}</p>`).join("");
   $("#skills").innerHTML = list(about.skills).map((s) => `<li>${esc(s)}</li>`).join("");
   $("#tools").innerHTML = list(about.tools).map((s) => `<li>${esc(s)}</li>`).join("");
@@ -317,12 +332,12 @@
   // Alle Medien, die auf der Bühne gezeigt werden können (Titelbild zuerst)
   function stageItems(p) {
     const hints = site.showPlaceholderHints !== false;
-    const out = p.cover ? [{ type: "image", src: p.cover }] : [];
+    const out = p.cover ? [{ type: "image", src: p.cover, thumb: p.thumb }] : [];
     list(p.media).forEach((m) => {
       if (typeof m === "string") m = { type: "image", src: m };
       const k = kindOf(m);
       if (k === "text") return;
-      if (k === "image" && m.src && m.src === p.cover) { out[0] = m; return; } // Titelbild mit Bildunterschrift
+      if (k === "image" && m.src && m.src === p.cover) { out[0] = { thumb: p.thumb, ...m }; return; } // Titelbild mit Bildunterschrift
       if (!hints && ((k === "youtube" || k === "vimeo") ? !m.id : k === "embed" ? !m.url : false)) return;
       out.push(m);
     });
@@ -362,19 +377,18 @@
             <span class="compare__label compare__label--r mono">${esc(item.afterLabel || "Nachher")}</span>
           </div>`;
       default:
-        return media(item.src, { seed, palette: p.palette, alt: item.alt || item.caption || p.title, eager: true });
+        return media(item.src, { seed, palette: p.palette, alt: item.alt || item.caption || p.title, eager: true, hint: folderHint(p) });
     }
   }
 
   function thumbHTML(item, i, p) {
     const k = kindOf(item);
     const seed = k === "compare" ? `${p.slug}-${i}b` : `${p.slug}-${i}`;
-    const src = k === "image" ? item.src : k === "compare" ? item.after : k === "video" ? (item.poster || item.src) : "";
-    const still = k === "video" && !item.poster;
+    const src = k === "image" || k === "video" ? (item.thumb || item.poster || (k === "image" ? item.src : "")) : k === "compare" ? item.after : "";
     const badge = BADGES[k] ? `<span class="pv__badge" aria-hidden="true">${BADGES[k]}</span>` : "";
     const label = item.caption || item.label || `Medium ${i + 1}`;
     return `<button type="button" class="pv__thumb" data-i="${i}" aria-label="${esc(label)} anzeigen" title="${esc(label)}">
-      ${media(src, { seed, palette: p.palette, video: still, still })}${badge}</button>`;
+      ${media(src, { seed, palette: p.palette })}${badge}</button>`;
   }
 
   function projectHTML(p, idx) {

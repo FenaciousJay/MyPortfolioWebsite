@@ -1,15 +1,21 @@
 /* ==========================================================================
    INHALT DEINER WEBSITE
    --------------------------------------------------------------------------
-   Das ist die einzige Datei, die du normalerweise bearbeiten musst.
-   Bilder & Videos legst du in den Ordner "media/" und trägst hier den Pfad ein.
+   Hier stehen alle TEXTE deiner Seite.
+
+   Bilder & Videos musst du hier NICHT eintragen:
+   1. Originale in  media-original/projekte/<projekt>/  legen
+      (Dateinamen mit Nummer für die Reihenfolge, z. B. "01_Hauptansicht.jpg",
+       der Text nach der Nummer wird zur Bildunterschrift, "cover" = Kachelbild)
+   2. medien-aktualisieren.bat doppelklicken – fertig.
+   Porträt und Lebenslauf-PDF kommen nach  media-original/ueber-mich/.
 
    Tipps:
    - Texte stehen in "Anführungszeichen". Ein Komma nach jedem Eintrag nicht vergessen.
    - In längeren Texten (description, about.text, timeline text) darfst du
      einfaches HTML verwenden, z. B. <a href="https://...">Link</a> oder <em>kursiv</em>.
-   - Fehlt ein Bild, zeigt die Seite einen farbigen Platzhalter mit dem
-     erwarteten Dateipfad an. So siehst du sofort, was noch fehlt.
+   - Fehlt ein Bild, zeigt die Seite einen farbigen Platzhalter mit einem Hinweis,
+     in welchen Ordner die Bilder gehören.
    ========================================================================== */
 
 window.PORTFOLIO = {
@@ -33,8 +39,8 @@ window.PORTFOLIO = {
     availableText: "Offen für neue Projekte",
     intro: "Ich gestalte Bilder, Welten und Oberflächen an der Schnittstelle von Kunst und Technik.",
     email: "hallo@deine-domain.de",
-    cv: "media/lebenslauf.pdf",  // PDF in den media-Ordner legen ("" = Button ausblenden)
-    portrait: "media/ueber-mich/portrait.jpg",
+    cv: "",        // leer = automatisch aus media-original/ueber-mich/ (kein PDF = Button ausgeblendet)
+    portrait: "",  // leer = automatisch aus media-original/ueber-mich/
   },
 
   socials: [
@@ -87,36 +93,36 @@ window.PORTFOLIO = {
   /* ---------- Projekte ----------------------------------------------------
      Reihenfolge hier = Reihenfolge auf der Seite.
 
-     slug      → kurzer Name für die URL, nur a-z, 0-9 und Bindestrich
-     cover     → Vorschaubild (am besten quadratisch, mind. 1200 × 1200 px)
+     slug      → kurzer Name für die URL, nur a-z, 0-9 und Bindestrich.
+                 Der Bilder-Ordner heißt genauso (oder wie der Titel):
+                 media-original/projekte/<slug>/
      featured  → true = Kachel wird im Raster doppelt so groß
      palette   → zwei/drei Farben für den Platzhalter, solange kein Bild da ist
      info      → beliebige Angaben (Rolle, Kunde, Software …) unter der Beschreibung
-     media     → weitere Bilder, Videos usw. Auf der Projektseite erscheinen sie als
-                 anklickbare Vorschaubilder unter dem großen Bild. Mögliche Typen:
 
-       { type: "image",   src: "media/...jpg", caption: "" }
-       { type: "video",   src: "media/...mp4", poster: "" }   (läuft stumm als Loop)
+     Bilder & Videos aus dem Ordner kommen automatisch dazu. Zusätzlich kannst du
+     hier unter "media" Dinge ergänzen, die nicht als Datei vorliegen:
+
        { type: "youtube", id: "VIDEO-ID", caption: "" }
        { type: "vimeo",   id: "123456", caption: "" }
        { type: "embed",   url: "https://sketchfab.com/models/.../embed", label: "Sketchfab", caption: "" }
-       { type: "compare", before: "media/...wire.jpg", after: "media/...render.jpg",
-                          beforeLabel: "Wireframe", afterLabel: "Render" }
+       { type: "compare", before: "media/projekte/<slug>/04-wireframe.webp",
+                          after: "media/projekte/<slug>/01-render.webp",
+                          beforeLabel: "Wireframe", afterLabel: "Render" }   (Pfade: siehe media/)
        { type: "text",    title: "Prozess", text: "..." }   (erscheint als Absatz im Textbereich)
 
-     Das Cover ist automatisch das erste Bild. Klick auf das große Bild öffnet die Vollbildansicht.
+     Projekte, die nur als Ordner existieren, erscheinen automatisch (am Ende der Liste).
      YouTube/Vimeo/Embeds laden erst nach Klick (datenschutzfreundlich).
      ------------------------------------------------------------------------ */
   projects: [
     {
-      slug: "nebula-drift",
-      title: "Nebula Drift",
-      subtitle: "Ein Raumschiff-Konzept zwischen Industrie und Organik",
+      slug: "my-little-slime",
+      title: "My Little Slime",
+      subtitle: "Kurze Unterzeile zum Projekt",
       category: "3D",
       year: "2025",
       featured: true,
       palette: ["#3a2cff", "#ff5a36", "#120f2e"],
-      cover: "media/projekte/nebula-drift/cover.jpg",
       info: {
         "Rolle": "Konzept, Modeling, Lookdev",
         "Kunde": "Freies Projekt",
@@ -128,13 +134,7 @@ window.PORTFOLIO = {
         "Im zweiten Absatz kannst du auf den Prozess, technische Herausforderungen oder das Ergebnis eingehen.",
       ],
       media: [
-        { type: "image", src: "media/projekte/nebula-drift/01.jpg", caption: "Hauptansicht" },
-        { type: "image", src: "media/projekte/nebula-drift/02.jpg", caption: "Detail Cockpit" },
-        { type: "image", src: "media/projekte/nebula-drift/03.jpg", caption: "Detail Antrieb" },
-        { type: "compare", before: "media/projekte/nebula-drift/wireframe.jpg", after: "media/projekte/nebula-drift/01.jpg",
-          beforeLabel: "Wireframe", afterLabel: "Render" },
         { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
-        { type: "image", src: "media/projekte/nebula-drift/04.jpg", caption: "Turntable-Still" },
       ],
     },
     {
@@ -144,14 +144,9 @@ window.PORTFOLIO = {
       category: "Lookdev",
       year: "2025",
       palette: ["#d6a84f", "#2b2118", "#0e0b08"],
-      cover: "media/projekte/kintsugi/cover.jpg",
       info: { "Rolle": "Shading, Lighting", "Software": "Blender, Cycles" },
       description: ["Projektbeschreibung hier einfügen."],
-      media: [
-        { type: "image", src: "media/projekte/kintsugi/01.jpg" },
-        { type: "image", src: "media/projekte/kintsugi/02.jpg" },
-        { type: "image", src: "media/projekte/kintsugi/03.jpg" },
-      ],
+      media: [],
     },
     {
       slug: "stillleben-no-7",
@@ -160,12 +155,9 @@ window.PORTFOLIO = {
       category: "Illustration",
       year: "2024",
       palette: ["#7a9e7e", "#e8d8c3", "#1c241d"],
-      cover: "media/projekte/stillleben-no-7/cover.jpg",
       info: { "Rolle": "Illustration", "Software": "Photoshop, Procreate" },
       description: ["Projektbeschreibung hier einfügen."],
-      media: [
-        { type: "image", src: "media/projekte/stillleben-no-7/01.jpg" },
-      ],
+      media: [],
     },
     {
       slug: "signal-noise",
@@ -175,11 +167,9 @@ window.PORTFOLIO = {
       year: "2024",
       featured: true,
       palette: ["#00e0b8", "#0a2a3a", "#06090c"],
-      cover: "media/projekte/signal-noise/cover.jpg",
       info: { "Rolle": "Motion Design", "Kunde": "Musiklabel", "Software": "Houdini, After Effects" },
       description: ["Projektbeschreibung hier einfügen."],
       media: [
-        { type: "video", src: "media/projekte/signal-noise/loop.mp4", caption: "Loop, 12 Sekunden" },
         { type: "youtube", id: "", caption: "Ganzes Video auf YouTube – trage die Video-ID ein" },
       ],
     },
@@ -190,11 +180,9 @@ window.PORTFOLIO = {
       category: "3D",
       year: "2024",
       palette: ["#5c5c66", "#c9c9d6", "#0b0b0f"],
-      cover: "media/projekte/ferrofluid/cover.jpg",
       info: { "Rolle": "Simulation, Rendering", "Software": "Houdini, Redshift" },
       description: ["Projektbeschreibung hier einfügen."],
       media: [
-        { type: "image", src: "media/projekte/ferrofluid/01.jpg" },
         { type: "embed", url: "", label: "Sketchfab", caption: "Interaktives 3D-Modell – trage die Embed-URL ein" },
       ],
     },
@@ -205,13 +193,9 @@ window.PORTFOLIO = {
       category: "Concept Art",
       year: "2023",
       palette: ["#ff2e88", "#2a1a5e", "#08060f"],
-      cover: "media/projekte/night-shift/cover.jpg",
       info: { "Rolle": "Concept Art", "Software": "Blender, Photoshop" },
       description: ["Projektbeschreibung hier einfügen."],
-      media: [
-        { type: "image", src: "media/projekte/night-shift/01.jpg" },
-        { type: "image", src: "media/projekte/night-shift/02.jpg" },
-      ],
+      media: [],
     },
     {
       slug: "orbit",
@@ -220,13 +204,9 @@ window.PORTFOLIO = {
       category: "3D",
       year: "2023",
       palette: ["#e8e4dc", "#9b8f7a", "#1a1815"],
-      cover: "media/projekte/orbit/cover.jpg",
       info: { "Rolle": "Produktvisualisierung", "Kunde": "Kunde Name", "Software": "Cinema 4D, Octane" },
       description: ["Projektbeschreibung hier einfügen."],
-      media: [
-        { type: "image", src: "media/projekte/orbit/01.jpg" },
-        { type: "image", src: "media/projekte/orbit/02.jpg" },
-      ],
+      media: [],
     },
     {
       slug: "brutal-bloom",
@@ -235,12 +215,9 @@ window.PORTFOLIO = {
       category: "Illustration",
       year: "2022",
       palette: ["#b7ff3c", "#4a4f45", "#0f110d"],
-      cover: "media/projekte/brutal-bloom/cover.jpg",
       info: { "Rolle": "Illustration", "Software": "Procreate" },
       description: ["Projektbeschreibung hier einfügen."],
-      media: [
-        { type: "image", src: "media/projekte/brutal-bloom/01.jpg" },
-      ],
+      media: [],
     },
   ],
 };
