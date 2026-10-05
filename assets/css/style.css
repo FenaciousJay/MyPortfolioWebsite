@@ -153,16 +153,6 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
   .hero__line--italic { padding-left: 8vw; }
 }
 
-/* ---------- Laufband ------------------------------------------------------ */
-.marquee { border-block: 1px solid var(--line); overflow: hidden; padding: 11px 0; }
-.marquee__track { display: flex; width: max-content; will-change: transform; }
-.marquee__track span {
-  font-family: var(--sans); font-size: clamp(11px, .9vw, 13px); font-weight: 400; line-height: 1;
-  text-transform: uppercase; letter-spacing: .16em; color: var(--muted);
-  padding-right: 2em; white-space: nowrap;
-}
-.marquee__track span b { font-weight: 400; color: var(--accent); padding-left: 2em; }
-
 /* ---------- Sektionen ----------------------------------------------------- */
 .section { padding: clamp(64px, 8vw, 112px) var(--gutter) 0; }
 .section__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: clamp(24px, 3vw, 40px); }

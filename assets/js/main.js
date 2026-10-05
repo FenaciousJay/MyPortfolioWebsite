@@ -119,7 +119,6 @@
     fitName();
     root.classList.add("is-ready");
     setTimeout(() => root.classList.add("intro-done"), 2200);
-    buildMarquee();
   };
   (document.fonts ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]) : Promise.resolve()).then(ready);
 
@@ -135,20 +134,6 @@
   }
   tickClock();
   setInterval(tickClock, 10000);
-
-  /* ---------- Laufband ------------------------------------------------------- */
-  const track = $("#marquee");
-  const marquee = { x: 0, unit: 0, speed: 0, dir: 1 };
-  function buildMarquee() {
-    const words = list(D.disciplines);
-    if (!words.length) { track.parentElement.hidden = true; return; }
-    const unit = words.map((w) => `<span>${esc(w)}<b>·</b></span>`).join("");
-    track.innerHTML = unit;
-    marquee.unit = track.scrollWidth || 1;
-    track.innerHTML = unit.repeat(Math.ceil((innerWidth * 2) / marquee.unit) + 1);
-  }
-  let resizeT;
-  addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(buildMarquee, 200); });
 
   /* ---------- Arbeiten: Raster & Liste -------------------------------------- */
   const grid = $("#grid");
@@ -650,7 +635,7 @@
     else if (lb.hidden && current && !projEl.contains(e.target)) $("#pClose").focus();
   });
 
-  /* ---------- Cursor, Licht im Hero, Laufband (eine Animationsschleife) ----- */
+  /* ---------- Cursor & Licht im Hero (eine Animationsschleife) ------------- */
   const mouse = { x: innerWidth / 2, y: innerHeight / 2, moved: false };
   addEventListener("pointermove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.moved = true; }, { passive: true });
 
@@ -677,7 +662,6 @@
   const glow = $(".hero__glow");
   const g = { x: innerWidth * 0.6, y: innerHeight * 0.4 };
   let t0 = performance.now();
-  let lastScroll = scrollY;
 
   function frame(now) {
     const still = reduce();
@@ -699,18 +683,6 @@
       glow.style.setProperty("--gx", `${g.x}px`);
       glow.style.setProperty("--gy", `${g.y}px`);
     }
-
-    // Laufband: Richtung & Tempo reagieren aufs Scrollen
-    if (!still && marquee.unit > 1 && !current) {
-      const dy = scrollY - lastScroll;
-      if (dy) marquee.dir = dy > 0 ? 1 : -1;
-      marquee.speed = lerp(marquee.speed, 0.5 + Math.min(Math.abs(dy), 60) * 0.12, 0.08);
-      marquee.x -= marquee.speed * marquee.dir;
-      if (marquee.x <= -marquee.unit) marquee.x += marquee.unit;
-      if (marquee.x > 0) marquee.x -= marquee.unit;
-      track.style.transform = `translate3d(${marquee.x}px,0,0)`;
-    }
-    lastScroll = scrollY;
 
     // Vorschau in der Listenansicht
     if (prev.on) {

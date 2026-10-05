@@ -44,9 +44,6 @@ window.PORTFOLIO = {
     { label: "Behance",    url: "https://www.behance.net/" },
   ],
 
-  // Laufband unter dem Startbereich
-  disciplines: ["3D Art", "Concept Art", "Lookdev", "Motion Design", "Illustration", "Art Direction"],
-
   about: {
     statement: "Gute Bilder erzählen mehr, als sie zeigen.",
     text: [
