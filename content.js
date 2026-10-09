@@ -22,42 +22,48 @@ window.PORTFOLIO = {
 
   /* ---------- Allgemein ---------------------------------------------------- */
   site: {
-    title: "Vorname Nachname — Portfolio",
-    description: "Portfolio von Vorname Nachname: 3D, Concept Art und visuelles Design.",
+    title: "Jonas Schramme — Portfolio",
+    description: "Portfolio von Jonas Schramme, 3D Artist aus Berlin: 3D-Scanning, Photogrammetrie, Game Art und 3D-Design.",
     accent: "#ff5a36",           // Akzentfarbe der ganzen Seite
     showPlaceholderHints: true,  // false = Dateipfade in Platzhaltern ausblenden
+    gridLayout: "mosaic",        // TEST: "mosaic" = freies Mosaik, "masonry" = gleich breite Spalten, "square" = quadratisch
+    wireframe: true,             // TEST: Wireframe an den Seitenrändern (false = aus)
   },
 
   /* ---------- Über dich ---------------------------------------------------- */
   person: {
-    firstName: "Vorname",
-    lastName: "Nachname",
-    role: "3D Artist & Visual Designer",
+    firstName: "Jonas",
+    lastName: "Schramme",
+    role: "3D Artist",
     location: "Berlin",
     timezone: "Europe/Berlin",   // für die kleine Uhr oben rechts
     available: true,             // zeigt „Offen für Projekte“ mit grünem Punkt
     availableText: "Offen für neue Projekte",
-    intro: "Ich gestalte Bilder, Welten und Oberflächen an der Schnittstelle von Kunst und Technik.",
-    email: "hallo@deine-domain.de",
+    intro: "3D Artist mit Schwerpunkt auf 3D-Design, Photogrammetrie und Toolprogrammierung – vom realen Objekt bis zum fertigen digitalen Asset.",
+    email: "j.schramme@outlook.com",
     cv: "",        // leer = automatisch aus media-original/ueber-mich/ (kein PDF = Button ausgeblendet)
     portrait: "",  // leer = automatisch aus media-original/ueber-mich/
   },
 
   socials: [
+	{ label: "LinkedIn",   url: "https://www.linkedin.com/" },
     { label: "ArtStation", url: "https://www.artstation.com/" },
-    { label: "Instagram",  url: "https://www.instagram.com/" },
-    { label: "LinkedIn",   url: "https://www.linkedin.com/" },
-    { label: "Behance",    url: "https://www.behance.net/" },
+    { label: "Sketchfab",    url: "https://sketchfab.com/JonasSchramme" },
+	//{ label: "Instagram",  url: "https://www.instagram.com/" },
   ],
 
   about: {
-    statement: "Gute Bilder erzählen mehr, als sie zeigen.",
+    statement: "Ich bringe reale Objekte in die digitale Welt – und baue die Werkzeuge dafür gleich mit.",
     text: [
-      "Hier steht ein kurzer Absatz über dich: woher du kommst, was dich antreibt und welche Art von Arbeiten du am liebsten machst.",
-      "Ein zweiter Absatz kann deine Arbeitsweise beschreiben – zum Beispiel, wie du von der ersten Skizze bis zum finalen Render vorgehst.",
+      "Zuletzt war ich als 3D Artist bei der botspot 3D Scan GmbH tätig. Mein Schwerpunkt lag auf der Digitalisierung realer Objekte und der Weiterentwicklung unserer Scanner: von der Konzeptentwicklung über 3D-Druck und die Entwicklung von Beleuchtungs- und Kamerasystemen bis zur Programmierung und Aufbereitung der Scandaten für Website und Kunden.",
+      "Meine Laufbahn begann mit der Ausbildung zum 3D Artist an der School for Games (S4G) in Berlin. Bei ZEBROS und der botspot AG habe ich meine Kenntnisse in der Photogrammetrie vertieft, eine leitende Funktion in der Art-Abteilung übernommen und Kunden zu Produkten und technischen Details beraten.",
     ],
-    skills: ["Hard Surface Modeling", "Texturing & Shading", "Lighting", "Concept Design", "Komposition", "Compositing"],
-    tools: ["Blender", "ZBrush", "Substance Painter", "Photoshop", "Unreal Engine", "After Effects"],
+    skills: [
+      "3D-Scanning & Photogrammetrie", "3D Gaussian Splatting", "Mesh- & Texturaufbereitung (Baking)",
+      "Leveldesign & Worldbuilding", "Prototyping in Unity", "Materialien, Animation & VFX",
+      "Rendering für Marketing", "3D-Druck & Bauteilentwicklung", "Drohnen-Scans",
+    ],
+    tools: ["Blender", "Adobe Photoshop", "Substance Painter", "RealityScan", "Unity 3D", "Figma", "Confluence", "MS Office", "Bambu Lab (3D-Druck)"],
   },
 
   /* ---------- Werdegang / Lebenslauf -------------------------------------- */
@@ -65,27 +71,32 @@ window.PORTFOLIO = {
     {
       heading: "Berufserfahrung",
       items: [
-        { period: "2024 — heute", title: "3D Artist", place: "Studio Name, Berlin",
-          text: "Kurze Beschreibung deiner Aufgaben und Erfolge in dieser Position." },
-        { period: "2022 — 2024", title: "Junior Designer", place: "Agentur Name, Hamburg",
-          text: "Kurze Beschreibung deiner Aufgaben und Erfolge in dieser Position." },
-        { period: "2021", title: "Praktikum Visual Effects", place: "Firma Name, München",
-          text: "Kurze Beschreibung deiner Aufgaben." },
+        { period: "12/2025 — 06/2026", title: "Innovation Creator", place: "botspot 3D Scan GmbH",
+          text: "3D-Scanning, Photogrammetrie & 3D Gaussian Splatting (3DGS) · Aufbereitung von 3D-Modellen (Baking, Mesh, Textur) · 3D-Druck und Entwicklung von Bauteilen · Aufbau der Scanner · KI-gestützte Softwareentwicklung" },
+        { period: "12/2022 — 11/2025", title: "Subject-Matter-Expert – 3D-Design & Animation", place: "ZEBROS GmbH",
+          text: "Prototypen- & App-Entwicklung in Unity · Leveldesign & Worldbuilding · Meshes, Materialien, Animationen, UI, VFX, Videobearbeitung · 3D-Scans vor Ort – am Boden und aus der Luft per Drohne – inkl. Verarbeitung" },
+        { period: "03/2022 — 12/2022", title: "3D Artist – Scanner Industry", place: "botspot AG",
+          text: "3D-Scanning & Photogrammetrie · Aufbereitung von 3D-Modellen (Baking, Mesh, Textur) · Rendering für Marketing · Aufbau von Scannern · Kalibrierung vor Ort & Kundeneinweisung" },
+        { period: "10/2019 — 03/2022", title: "3D Game Artist – Game Development", place: "Stratosphere Games GmbH",
+          text: "Prototypen-Entwicklung in Unity · Leveldesign · Worldbuilding · Meshes, Materialien, Animationen, UI, VFX" },
       ],
     },
     {
       heading: "Ausbildung",
       items: [
-        { period: "2018 — 2022", title: "B.A. Kommunikationsdesign", place: "Hochschule Name",
-          text: "Schwerpunkt, Abschlussarbeit oder Note." },
-        { period: "2018", title: "Abitur", place: "Schule Name", text: "" },
+        { period: "09/2026", title: "Drechselkurs", place: "Handwerkskammer, Berlin",
+          text: "Einführung in Maschienen und Techniken des Drechselhandwerks" },
+	    { period: "05/2024", title: "Drohnenführerschein A1/A3", place: "Luftfahrt Bundesamt, Berlin",
+          text: "Führerschein für das benutzen von Kleindrohnen" },
+		{ period: "09/2017 — 10/2019", title: "Ausbildung zum 3D Artist", place: "S4G School for Games, Berlin",
+          text: "Zahlreiche Gruppenprojekte · Pflichtpraktikum bei der Stratosphere Games GmbH" },
       ],
     },
     {
-      heading: "Auszeichnungen & Ausstellungen",
+      heading: "Sprachen",
       items: [
-        { period: "2025", title: "Name des Awards", place: "Veranstalter", text: "" },
-        { period: "2023", title: "Gruppenausstellung „Titel“", place: "Galerie, Stadt", text: "" },
+        { period: "Muttersprache", title: "Deutsch", place: "", text: "" },
+        { period: "Fließend", title: "Englisch", place: "", text: "" },
       ],
     },
   ],
@@ -93,9 +104,13 @@ window.PORTFOLIO = {
   /* ---------- Projekte ----------------------------------------------------
      Reihenfolge hier = Reihenfolge auf der Seite.
 
-     slug      → kurzer Name für die URL, nur a-z, 0-9 und Bindestrich.
-                 Der Bilder-Ordner heißt genauso (oder wie der Titel):
-                 media-original/projekte/<slug>/
+     slug      → kurzer Name für die URL. Schreibweise egal ("The Moon Trilogy" wird zu "the-moon-trilogy"),
+                 er verbindet diesen Eintrag mit dem Bilder-Ordner
+                 media-original/projekte/<Projektname>/  ("Spaceship on patrol" → "spaceship-on-patrol").
+     title     → Titel auf der Seite. Neue Einträge bekommen den Ordnernamen, du kannst ihn frei ändern.
+                 Ordner umbenennen? Einfach tun – das Medien-Skript passt slug (und einen
+                 unveränderten Titel) hier an.
+     category  → eine Kategorie ("3D") oder mehrere: ["2D", "Illustration"]
      featured  → true = Kachel wird im Raster doppelt so groß
      palette   → zwei/drei Farben für den Platzhalter, solange kein Bild da ist
      info      → beliebige Angaben (Rolle, Kunde, Software …) unter der Beschreibung
@@ -103,7 +118,7 @@ window.PORTFOLIO = {
      Bilder & Videos aus dem Ordner kommen automatisch dazu. Zusätzlich kannst du
      hier unter "media" Dinge ergänzen, die nicht als Datei vorliegen:
 
-       { type: "youtube", id: "VIDEO-ID", caption: "" }
+       { type: "youtube", url: "https://www.youtube.com/watch?v=…", caption: "" }   (Link einfach aus dem Browser kopieren)
        { type: "vimeo",   id: "123456", caption: "" }
        { type: "embed",   url: "https://sketchfab.com/models/.../embed", label: "Sketchfab", caption: "" }
        { type: "compare", before: "media/projekte/<slug>/04-wireframe.webp",
@@ -116,108 +131,451 @@ window.PORTFOLIO = {
      ------------------------------------------------------------------------ */
   projects: [
     {
-      slug: "my-little-slime",
-      title: "My Little Slime",
-      subtitle: "Kurze Unterzeile zum Projekt",
+      slug: "spaceship-on-patrol",
+      title: "Spaceship on Patrol",
+      subtitle: "A Star Wars inspired Project",
       category: "3D",
       year: "2025",
       featured: true,
       palette: ["#3a2cff", "#ff5a36", "#120f2e"],
       info: {
-        "Rolle": "Konzept, Modeling, Lookdev",
-        "Kunde": "Freies Projekt",
-        "Software": "Blender, Substance Painter",
-        "Dauer": "4 Wochen",
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop, Gaea",
+       // "Dauer": "4 Wochen",
       },
       description: [
-        "Beschreibe hier die Idee hinter dem Projekt: Was war die Aufgabe, was hat dich inspiriert?",
-        "Im zweiten Absatz kannst du auf den Prozess, technische Herausforderungen oder das Ergebnis eingehen.",
+        "A small spaceship of the fighter class. Fast and agile. It has space for just a view people and is equipped with two ballistic weapons on each wing. Here it flies above a planet and makes a break at an outpost somewhere in the mountains.",
+        "The Planet: created in Gaea",
+		"Spaceship: created & rendered in Blender & overpaint in Photoshop",
       ],
       media: [
+	    { type: "youtube", url: "https://www.youtube.com/watch?v=XR4oGzAXbmc", caption: "Turntable"},
         { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
       ],
     },
-    {
-      slug: "kintsugi",
-      title: "Kintsugi",
-      subtitle: "Studie über Bruch, Gold und Reparatur",
-      category: "Lookdev",
+	
+	{
+      slug: "spaceship-fighter-class",
+      title: "Spaceship - Fighter Class",   // auf der Seite gilt der Ordnername
+      subtitle: "",
+      category: "3D",        // z. B. "3D", "Illustration" – erscheint als Filter
       year: "2025",
-      palette: ["#d6a84f", "#2b2118", "#0e0b08"],
-      info: { "Rolle": "Shading, Lighting", "Software": "Blender, Cycles" },
-      description: ["Projektbeschreibung hier einfügen."],
-      media: [],
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "",
+        "Software": "",
+      },
+      description: [
+        "",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
     },
-    {
-      slug: "stillleben-no-7",
-      title: "Stillleben No. 7",
-      subtitle: "Klassische Komposition, digitales Licht",
-      category: "Illustration",
-      year: "2024",
-      palette: ["#7a9e7e", "#e8d8c3", "#1c241d"],
-      info: { "Rolle": "Illustration", "Software": "Photoshop, Procreate" },
-      description: ["Projektbeschreibung hier einfügen."],
-      media: [],
-    },
-    {
-      slug: "signal-noise",
-      title: "Signal / Noise",
-      subtitle: "Ein Motion-Loop über Datenrauschen",
-      category: "Motion",
-      year: "2024",
+	{
+      slug: "Camera Objective-Configurator",
+      title: "Camera Objective Configurator",
+      subtitle: "Calculate Lenses and plan your Objective",
+      category: "Tools",
+      year: "2026",
       featured: true,
-      palette: ["#00e0b8", "#0a2a3a", "#06090c"],
-      info: { "Rolle": "Motion Design", "Kunde": "Musiklabel", "Software": "Houdini, After Effects" },
-      description: ["Projektbeschreibung hier einfügen."],
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Visual Studio Code, Notepad++, Claude",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "The idea came when I started to deepen my Photography and kamera knowledge. Since I couldn't find a good app for such purposes, I startet to build my own. It's still work in progress, But I am happy with the current state.",
+		"In this App you can configurate lenses with all important variables. The Light Rays simulate the path the light/ the picture would travel throught the lenses. Objective and Camera Body do adjust automaticaly to the lense sizes. If a setup is good to go, it can be exported as an pdf with all parameters per lense.",
+      ],
       media: [
-        { type: "youtube", id: "", caption: "Ganzes Video auf YouTube – trage die Video-ID ein" },
+	   // { type: "youtube", url: "https://www.youtube.com/watch?v=XR4oGzAXbmc", caption: "Turntable"},
+        { type: "text", title: "Prozess", text: "I startet to program it by myself, but reched my limit when it came to the complex lens calculations. So I took support from ChatGPT and later from Claude as an assistant." },
       ],
     },
-    {
-      slug: "ferrofluid",
-      title: "Ferrofluid",
-      subtitle: "Simulation & Materialstudie",
+	{
+      slug: "BOKASSA",
+      title: "BOKASSA",
+      subtitle: "A bands album cover",
       category: "3D",
       year: "2024",
-      palette: ["#5c5c66", "#c9c9d6", "#0b0b0f"],
-      info: { "Rolle": "Simulation, Rendering", "Software": "Houdini, Redshift" },
-      description: ["Projektbeschreibung hier einfügen."],
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Awesome band, awesome music. Recreated the cover art of Crimson Riders in 3D.",
+        "Added some of my own touches, all done in Blender Eevee.",
+		
+      ],
       media: [
-        { type: "embed", url: "", label: "Sketchfab", caption: "Interaktives 3D-Modell – trage die Embed-URL ein" },
+	    { type: "youtube", url: "https://www.youtube.com/watch?v=tFYIIHddnj8", caption: "Turntable"},
+        { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
+      ],
+    },
+	{
+      slug: "Guardian of the forest",
+      title: "Guardian of the forest",
+      subtitle: "inspired by the BOKASSA project",
+      category: "3D",
+      year: "2024",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Inspired by the Bokassa album artwork.",
+		
+      ],
+      media: [
+	    { type: "youtube", url: "https://www.youtube.com/watch?v=tFYIIHddnj8", caption: "Turntable"},
+        { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
+      ],
+    },
+		{
+      slug: "Nuka Cola Tropic Edition",
+      title: "Nuka Cola Tropic Edition",
+      subtitle: "inspired by the Fallout serie",
+      category: "3D",
+      year: "2024",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop, SubstancePainter",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Nuka Cola Tropic Edition Just some product design for advertisments.",
+		
+      ],
+      media: [
+	    { type: "youtube", url: "https://www.youtube.com/watch?v=A-JvmNwwQkI", caption: "Turntable"},
+        { type: "text", title: "Prozess", text: "Ein Zwischentext, z. B. zu Skizzen, Referenzen oder Iterationen." },
+      ],          
+    },
+	{
+      slug: "The Perfume",
+      title: "The Perfume",
+      subtitle: "A small productdesign",
+      category: "3D",
+      year: "2024",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "3D Perfume Rendering with short animation. A perfume in a transparent bottle with different colors.",
+      ],
+      media: [
+	    { type: "youtube", url: "https://www.youtube.com/watch?v=_v7GGOIQMiM", caption: "Animation"},
+      ],
+    },
+	{
+      slug: "Banjo with Stand",
+      title: "Banjo with Stand",
+      subtitle: "",
+      category: "3D",
+      year: "2023",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Diffuse, Roughness, Metallic, Normal Midpoly: Banjo = 31.200P Stand = 4444P.",
+      ],
+      media: [
+      ],
+    },
+	{
+      slug: "Trumpet with Damper",
+      title: "Trumpet with Damper",
+      subtitle: "",
+      category: "3D",
+      year: "2023",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, SubstancePainter",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "A standard trumpet with damper",
+	    "Base Color / Metallic / Roughness Mid Poly -> Trumpet with Damper 32k poly",
+      ],
+      media: [
+      ],
+    },
+	{
+      slug: "M.Hohner Harmonica",
+      title: "M.Hohner Harmonica",
+      subtitle: "The real one",
+      category: "3D",
+      year: "2021",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "3ds Max, Photoshop, SubstancePainter, Marmoset Toolbag",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "3D Perfume Rendering with short animation. A perfume in a transparent bottle with different colors.",
+      ],
+      media: [
+	   
+      ],
+    },
+	{
+      slug: "Old Steampunk Camera",
+      title: "Old Steampunk Camer",
+      subtitle: "",
+      category: "3D",
+      year: "2018",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "PBR Training Course",
+        "Software": "3ds Max, Photoshop, SubstancePainter, Marmoset Toolbag",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "One of my first bigger objects. I made it in my steampunk phase. A friend of mine, Emre Karabacak helped me to start with the basics.",
+      ],
+      media: [
+	   
+      ],
+    },
+	{
+      slug: "Nuka Cola Refrigerator",
+      title: "Nuka Cola Refrigerator",
+      subtitle: "",
+      category: "3D",
+      year: "2022",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "3ds Max, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "A fridge to keep cool our beloved Nuka Cola - Can edition",
+      ],
+      media: [
+	   
+      ],
+    },
+	{
+      slug: "Scanned nature - Forest",
+      title: "Scanned nature - Forest",
+      subtitle: "A collection of scanned nature props",
+      category: ["3D", "Photogrammetry"],
+      year: "2025",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "3DF Zephyr, Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Some nature scanned by phone and processed in 3df Zephyr. Fir Tree with old Resin Farm and Birdhouse Old Rotted Tree Stump with Moss Mossy Tree Stump with Tree Fungus Pine Cone",
+      ],
+      media: [
+	   { type: "text", title: "Prozess", text: "The photogrammetry process turns overlapping 2D photographs into precise 3D models, point clouds, or maps using computer software and triangulation." },
+      ],
+    },
+	{
+      slug: "Scanned Sculptures",
+      title: "Sculptures, Figures, Miniatures",
+      subtitle: "A collection of scanned Sculptures",
+      category: ["3D", "Photogrammetry"],
+      year: "2023",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "RealityScan, 3DF Zephyr, Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Some sculptures and figures scanned by phone and processed in 3df Zephyr and RealityScan",
+      ],
+      media: [
+	   { type: "text", title: "Prozess", text: "The photogrammetry process turns overlapping 2D photographs into precise 3D models, point clouds, or maps using computer software and triangulation." },
+      ],
+    },
+	{
+      slug: "GEDORE - Tool Cabinet",
+      title: "GEDORE - Tool Cabinet",
+      subtitle: "A historical GEDORE Toolbox",
+      category: ["3D", "Photogrammetry"],
+      year: "2024",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "RealityScan, 3DF Zephyr, Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "70s Tool cabinet by Gedore.",
+      ],
+      media: [
+	   { type: "text", title: "Prozess", text: "The photogrammetry process turns overlapping 2D photographs into precise 3D models, point clouds, or maps using computer software and triangulation." },
       ],
     },
     {
-      slug: "night-shift",
-      title: "Night Shift",
-      subtitle: "Environment-Konzept einer Stadt bei Nacht",
-      category: "Concept Art",
-      year: "2023",
-      palette: ["#ff2e88", "#2a1a5e", "#08060f"],
-      info: { "Rolle": "Concept Art", "Software": "Blender, Photoshop" },
-      description: ["Projektbeschreibung hier einfügen."],
-      media: [],
-    },
-    {
-      slug: "orbit",
-      title: "Orbit",
-      subtitle: "Produktvisualisierung für ein Designobjekt",
+      slug: "The Moon Trilogy",
+      title: "The Moon Trilogy",
+      subtitle: "The Moon Serie.",
       category: "3D",
-      year: "2023",
-      palette: ["#e8e4dc", "#9b8f7a", "#1a1815"],
-      info: { "Rolle": "Produktvisualisierung", "Kunde": "Kunde Name", "Software": "Cinema 4D, Octane" },
-      description: ["Projektbeschreibung hier einfügen."],
-      media: [],
+      year: "2025",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Three parts in different styles.",
+        
+      ],
+      media: [  
+	  { type: "youtube", url: "https://www.youtube.com/watch?v=rM2T-_Fh7r4", caption: "Turntable"},], 
     },
     {
-      slug: "brutal-bloom",
-      title: "Brutal Bloom",
-      subtitle: "Pflanzen, die aus Beton wachsen",
-      category: "Illustration",
+      slug: "ape-piaggio",
+      title: "Ape Piaggio",   // auf der Seite gilt der Ordnername
+      subtitle: "",
+      category: "3D",
       year: "2022",
-      palette: ["#b7ff3c", "#4a4f45", "#0f110d"],
-      info: { "Rolle": "Illustration", "Software": "Procreate" },
-      description: ["Projektbeschreibung hier einfügen."],
-      media: [],
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "",
+        "Software": "",
+      },
+      description: [
+        "",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
+    },
+	{
+      slug: "SMERCH",
+      title: "BM-30 Smerch 9A52 MLRS",   // auf der Seite gilt der Ordnername
+      subtitle: "",
+      category: "3D",
+      year: "2022",
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "",
+        "Software": "",
+      },
+      description: [
+        "BM-30 Smerch 9A52 MLRS BM-30 Smerch 9A52 MLRS one of the strongest motorized multirocket launcher systems. Originaly invented by the Sowjet Union around 1980, today mainly used by Russia, Ukraine and China",
+		"Lowpoly: 12.750p",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
+    },
+    {
+      slug: "chino-speakers",
+      title: "Chino - Speakers",   // auf der Seite gilt der Ordnername
+      subtitle: "",
+      category: "3D",
+      year: "2024",
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "",
+        "Software": "",
+      },
+      description: [
+        "",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
+    },
+    {
+      slug: "snowy-mountain",
+      title: "Snowy Mountain",   // auf der Seite gilt der Ordnername
+      subtitle: "2d-Excourse",
+      category: "2D",        // z. B. "3D", "Illustration" – erscheint als Filter
+      year: "2025",
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "",
+        "Software": "",
+      },
+      description: [
+        "",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
+    },
+
+    {
+      slug: "the-wandering-ox",
+      title: "The Wandering Ox",   // auf der Seite gilt der Ordnername
+      subtitle: "2d-Excourse",
+      category: "2D",        // z. B. "3D", "Illustration" – erscheint als Filter
+      year: "2025",
+      featured: false,     // true = Kachel doppelt so groß
+      info: {
+        "Rolle": "123",
+        "Software": "",
+      },
+      description: [
+        "",
+      ],
+      media: [],           // z. B. { type: "youtube", url: "https://…" }
+    },
+    {
+      slug: "just-a-cake",
+      title: "Just A Cake",   // auf der Seite gilt der Ordnername
+      subtitle: "3d manga style shortstory",
+      category: "3D",
+      year: "2025",
+      featured: false,
+      palette: ["#3a2cff", "#ff5a36", "#120f2e"],
+      info: {
+       // "Rolle": "Konzept, Modeling, Lookdev",
+        "Kunde": "Personal Project",
+        "Software": "Blender, Photoshop",
+       // "Dauer": "4 Wochen",
+      },
+      description: [
+        "Short manga story. Dark themed joke scene made in Blender. Shader and animations are done in Blender, editing done in Adobe Premiere. It's all a mix of 3d and 2d hand painted textures & sprites compared with some shader magic.",
+        "The sceneries are inspired by the Abara Manga book, which has some amazing visuals.",
+		
+      ],
+      media: [  
+	  { type: "youtube", url: "https://www.youtube.com/watch?v=UAFJJuR_f4I", caption: "Turntable"},],           // z. B. { type: "youtube", url: "https://…" }
     },
   ],
 };

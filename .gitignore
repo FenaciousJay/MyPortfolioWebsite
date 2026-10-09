@@ -3,3 +3,6 @@ media-original/
 
 # Hilfsprogramme für das Medien-Skript
 tools/node_modules/
+
+# Sicherung von content.js (legt das Medien-Skript an)
+tools/content-sicherung.js

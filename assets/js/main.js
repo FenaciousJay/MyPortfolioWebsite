@@ -8,9 +8,11 @@
 
   const D = window.PORTFOLIO;
   if (!D) {
-    document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">content.js konnte nicht gelesen werden. ' +
-      "Meist ist es ein Tippfehler, z. B. ein fehlendes Komma oder Anführungszeichen. " +
-      "Öffne die Browser-Konsole (F12), dort steht die genaue Zeile.</p>";
+    const err = window.CONTENT_ERROR;
+    document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif;color:#ecebe7;line-height:1.6">' +
+      "<b>content.js konnte nicht gelesen werden.</b><br>" +
+      (err ? `Fehler in <b>Zeile ${err.line}</b>: ${String(err.msg).replace(/</g, "&lt;")}<br>` : "") +
+      "Meist ist es ein Tippfehler, z. B. ein fehlendes Komma oder Anführungszeichen.</p>";
     return;
   }
 
@@ -34,17 +36,35 @@
      Angaben, die du von Hand in content.js machst, haben Vorrang.
      ------------------------------------------------------------------------- */
   const AUTO = window.PORTFOLIO_MEDIA || {};
+
+  // slug vereinheitlichen – genau wie das Medien-Skript: "BOKASSA" / "The Moon Trilogy" → "bokassa" / "the-moon-trilogy"
+  const slugify = (s) => String(s).toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "projekt";
   D.projects = list(D.projects);
-  Object.entries(AUTO.projects || {}).forEach(([slug, a]) => {
+  D.projects.forEach((p) => { if (p && p.slug) p.slug = slugify(p.slug); });
+
+  Object.entries(AUTO.projects || {}).forEach(([key, a]) => {
+    const slug = slugify(key);
     let p = D.projects.find((x) => x && x.slug === slug);
     if (!p) { p = { slug, title: a.title || slug }; D.projects.push(p); } // Ordner ohne Eintrag in content.js
-    if (!p.cover && a.cover) { p.cover = a.cover; p.thumb = p.thumb || a.thumb; }
+    else if (a.title && !p.title) p.title = a.title; // Ordnername nur, wenn in content.js kein Titel steht
+    if (!p.cover && a.cover) { p.cover = a.cover; p.thumb = p.thumb || a.thumb; p.preview = p.preview || a.preview; p.coverDim = a.coverDim; }
     p.media = [...list(a.media), ...list(p.media)];
   });
+  D.projects.forEach((p) => list(p && p.media).forEach((m) => {
+    if (!m || m.type !== "youtube") return;
+    const yt = (AUTO.youtube || {})[youtubeId(m.id || m.url)];
+    if (yt) { m.poster = m.poster || yt.poster; m.thumb = m.thumb || yt.thumb; }
+  }));
   if (!P.portrait && AUTO.portrait) P.portrait = AUTO.portrait;
   if (!P.cv && AUTO.cv) P.cv = AUTO.cv;
 
   const projects = list(D.projects).filter((p) => p && p.slug);
+  // Kategorien: "3D", ["2D", "Illustration"] oder "2D, Illustration"
+  const catsOf = (p) => list(p.category).flatMap((c) => String(c).split(",")).map((c) => c.trim()).filter(Boolean);
+  projects.forEach((p) => { p.cats = catsOf(p); });
   const folderHint = (p) => `Bilder in media-original/projekte/${p.slug}/ legen`;
   const fullName = [P.firstName, P.lastName].filter(Boolean).join(" ");
   const baseTitle = site.title || fullName || "Portfolio";
@@ -153,32 +173,44 @@
   /* ---------- Arbeiten: Raster & Liste -------------------------------------- */
   const grid = $("#grid");
   const listEl = $("#list");
-  $("#workCount").textContent = `(${pad(projects.length)})`;
+
+  // Raster-Variante (Schalter: site.gridLayout in content.js)
+  //   "mosaic"  = Kacheln unterschiedlich breit, frei verzahnt – keine durchgehenden Trennlinien
+  //   "masonry" = gleich breite Spalten, Höhe nach Seitenverhältnis des Covers
+  //   "square"  = quadratische Kacheln
+  const layoutMode = ["mosaic", "masonry", "square"].includes(site.gridLayout) ? site.gridLayout : "mosaic";
+  const masonry = layoutMode !== "square";
+  const mosaic = layoutMode === "mosaic";
+  const ASPECTS = [4 / 5, 1, 3 / 2, 2 / 3, 16 / 9, 5 / 4]; // für Projekte ohne Bild, damit das Raster trotzdem lebendig wirkt
+  const cardRatio = (p) => (p.coverDim && p.coverDim[1] ? p.coverDim[0] / p.coverDim[1] : ASPECTS[hash(p.slug) % ASPECTS.length]);
+  const cardSrc = (p) => (masonry ? p.preview || p.cover : p.thumb || p.cover);
+  grid.classList.toggle("is-masonry", masonry && !mosaic);
+  grid.classList.toggle("is-mosaic", mosaic);
 
   grid.innerHTML = projects.map((p, i) => `
-    <a class="card${p.featured ? " card--featured" : ""} reveal" href="#/projekt/${esc(p.slug)}" data-slug="${esc(p.slug)}" data-cat="${esc(p.category)}" data-cursor="Ansehen" style="--d:${(i % 4) * 70}ms">
-      ${media(p.thumb || p.cover, { seed: p.slug, palette: p.palette, alt: p.title, hint: folderHint(p) })}
+    <a class="card${p.featured ? " card--featured" : ""} reveal" href="#/projekt/${esc(p.slug)}" data-slug="${esc(p.slug)}" data-cat="${esc(p.cats.join("|"))}" data-cursor="Ansehen" style="--d:${(i % 4) * 70}ms;--ar:${cardRatio(p).toFixed(4)}">
+      ${media(cardSrc(p), { seed: p.slug, palette: p.palette, alt: p.title, hint: folderHint(p) })}
       <span class="card__index mono">${pad(i + 1)}</span>
       <div class="card__info">
-        <span class="card__cat mono">${esc(p.category)}${p.year ? ` · ${esc(p.year)}` : ""}</span>
+        <span class="card__cat mono">${esc(p.cats.join(" / "))}${p.year ? `${p.cats.length ? " · " : ""}${esc(p.year)}` : ""}</span>
         <h3 class="card__title">${esc(p.title)}</h3>
       </div>
     </a>`).join("");
 
   listEl.innerHTML = projects.map((p, i) => `
-    <a class="row" href="#/projekt/${esc(p.slug)}" data-slug="${esc(p.slug)}" data-cat="${esc(p.category)}" data-cursor="Ansehen">
+    <a class="row" href="#/projekt/${esc(p.slug)}" data-slug="${esc(p.slug)}" data-cat="${esc(p.cats.join("|"))}" data-cursor="Ansehen">
       <span class="row__idx mono">${pad(i + 1)}</span>
       <span class="row__title">${esc(p.title)}</span>
-      <span class="row__cat mono">${esc(p.category)}</span>
+      <span class="row__cat mono">${esc(p.cats.join(" / "))}</span>
       <span class="row__year mono">${esc(p.year)}</span>
     </a>`).join("");
 
   // Filter
-  const cats = [...new Set(projects.map((p) => p.category).filter(Boolean))];
+  const cats = [...new Set(projects.flatMap((p) => p.cats))];
   const filters = $("#filters");
   if (cats.length > 1) {
     filters.innerHTML = ["Alle", ...cats].map((c, i) => {
-      const n = c === "Alle" ? projects.length : projects.filter((p) => p.category === c).length;
+      const n = c === "Alle" ? projects.length : projects.filter((p) => p.cats.includes(c)).length;
       return `<button type="button" data-cat="${esc(c)}" class="${i === 0 ? "is-active" : ""}" aria-pressed="${i === 0}">${esc(c)}<sup>${n}</sup></button>`;
     }).join("");
   } else filters.hidden = true;
@@ -190,7 +222,7 @@
     $$("button", filters).forEach((b) => { b.classList.toggle("is-active", b === btn); b.setAttribute("aria-pressed", b === btn); });
     let n = 0;
     $$(".card, .row").forEach((el) => {
-      const show = cat === "Alle" || el.dataset.cat === cat;
+      const show = cat === "Alle" || el.dataset.cat.split("|").includes(cat);
       el.classList.toggle("is-filtered", !show);
       if (show && el.classList.contains("card") && !reduce()) {
         el.classList.remove("is-entering");
@@ -201,6 +233,82 @@
     });
   });
   grid.addEventListener("animationend", (e) => e.target.classList.remove("is-entering"));
+
+
+  // Mosaik ("Justified"): Kacheln zeilenweise, jede Zeile füllt die volle Breite exakt aus.
+  // Keine Freiräume, kein Beschnitt – die senkrechten Fugen liegen in jeder Zeile woanders.
+  const rowLuck = (i) => (hash(`zeile-${i}`) % 1000) / 1000; // feste "Zufallszahl" pro Zeile
+  function layoutMosaic() {
+    const W = grid.clientWidth;
+    if (!W) return;
+    const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    const base = W < 520 ? 150 : W < 900 ? 190 : 230;                   // Grund-Zeilenhöhe
+    const targetFor = (i, featured) => base * (0.78 + rowLuck(i) * 0.5) * (featured ? 1.5 : 1);
+    const items = $$(".card", grid).filter((c) => !c.classList.contains("is-filtered")).map((c) => ({
+      c, ar: parseFloat(c.style.getPropertyValue("--ar")) || 1, featured: c.classList.contains("card--featured"),
+    }));
+
+    let y = 0, rowIdx = 0, row = [];
+    const heightOf = (list) => (W - gap * (list.length - 1)) / list.reduce((s, it) => s + it.ar, 0);
+    const place = (list, h, stretch) => {
+      let x = 0;
+      list.forEach((it, i) => {
+        const w = stretch && i === list.length - 1 ? W - x : it.ar * h; // letzte Kachel schließt exakt bündig ab
+        Object.assign(it.c.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+        x += w + gap;
+      });
+      y += h + gap;
+      rowIdx++;
+    };
+
+    for (const it of items) {
+      row.push(it);
+      const target = targetFor(rowIdx, row.some((r) => r.featured));
+      const h = heightOf(row);
+      if (h > target) continue; // Zeile noch nicht voll
+      // Zeile ist voll: mit oder ohne die neue Kachel – was liegt näher an der Wunschhöhe?
+      if (row.length > 1 && Math.abs(heightOf(row.slice(0, -1)) - target) < Math.abs(h - target)) {
+        place(row.slice(0, -1), heightOf(row.slice(0, -1)), true);
+        row = [it];
+      } else {
+        place(row, h, true);
+        row = [];
+      }
+    }
+    if (row.length) { // letzte Zeile: nicht übermäßig aufblähen
+      const target = targetFor(rowIdx, row.some((r) => r.featured));
+      const h = heightOf(row);
+      place(row, Math.min(h, target * 1.4), h <= target * 1.4); // bündig strecken, solange sie nicht zu groß wird
+    }
+    grid.style.height = `${Math.max(0, y - gap)}px`;
+  }
+
+  // Mauerwerk: jede Kachel belegt so viele 1-px-Zeilen, wie ihre Höhe (+ Abstand) braucht.
+  // Die Höhe wird danach exakt auf "Zeilen minus Abstand" gesetzt – so ist der Abstand
+  // nach unten überall genau gleich groß wie der seitliche.
+  function layoutMasonry() {
+    if (!masonry || grid.hidden) return;
+    if (mosaic) { layoutMosaic(); return; }
+    const gs = getComputedStyle(grid);
+    const gap = parseFloat(gs.columnGap) || 0;
+    const colW = parseFloat(gs.gridTemplateColumns) || 0; // exakte Spaltenbreite (unabhängig von Animationen)
+    if (!colW) return;
+    const cols = gs.gridTemplateColumns.trim().split(/\s+/).length;
+    $$(".card", grid).forEach((c) => {
+      const ccs = getComputedStyle(c); // "grid-column: span 2" landet in gridColumnStart, nicht in gridColumnEnd
+      const span = Math.min(cols, +((/span (\d+)/.exec(`${ccs.gridColumnStart} ${ccs.gridColumnEnd}`) || [])[1] || 1));
+      const w = colW * span + gap * (span - 1);
+      const rows = Math.max(1, Math.round(w / parseFloat(c.style.getPropertyValue("--ar")) + gap));
+      c.style.gridRow = `span ${rows}`;
+      c.style.height = `${rows - gap}px`;
+      c.style.aspectRatio = "auto"; // Breite = Spalte, Höhe = berechnet (sonst leitet der Browser die Breite aus der Höhe ab)
+    });
+  }
+  if (masonry) {
+    layoutMasonry(); // sofort, damit beim ersten Anzeigen nichts übereinanderliegt
+    new ResizeObserver(layoutMasonry).observe(grid);
+    filters.addEventListener("click", () => requestAnimationFrame(layoutMasonry));
+  }
 
   // Raster / Liste umschalten (Auswahl wird gemerkt)
   const viewBtns = $$(".viewtoggle button");
@@ -320,40 +428,55 @@
      ------------------------------------------------------------------------- */
   const projEl = $("#project");
   const pScroll = $("#pScroll");
-  const FULL = "inset(0% 0% 0% 0% round 0px)";
   let current = null;
   let lastTrigger = null;
   let closeAnim = null;
   let pv = null; // { p, items, i } – aktuelles Projekt und gewähltes Medium
 
   const kindOf = (item) => item.type || "image";
+
+  // YouTube: kompletter Link (watch, youtu.be, Shorts, Embed) oder nur die 11-stellige ID
+  function youtubeId(v) {
+    const s = String(v || "").trim();
+    const m = s.match(/(?:[?&]v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([\w-]{11})/);
+    return m ? m[1] : /^[\w-]{11}$/.test(s) ? s : "";
+  }
   const BADGES = { video: "▶", youtube: "▶", vimeo: "▶", embed: "◇", compare: "↔" };
 
   // Alle Medien, die auf der Bühne gezeigt werden können (Titelbild zuerst)
   function stageItems(p) {
     const hints = site.showPlaceholderHints !== false;
-    const out = p.cover ? [{ type: "image", src: p.cover, thumb: p.thumb }] : [];
+    const out = p.cover ? [{ type: "image", src: p.cover, thumb: p.thumb, dim: p.coverDim }] : [];
     list(p.media).forEach((m) => {
       if (typeof m === "string") m = { type: "image", src: m };
       const k = kindOf(m);
       if (k === "text") return;
-      if (k === "image" && m.src && m.src === p.cover) { out[0] = { thumb: p.thumb, ...m }; return; } // Titelbild mit Bildunterschrift
-      if (!hints && ((k === "youtube" || k === "vimeo") ? !m.id : k === "embed" ? !m.url : false)) return;
+      if (k === "image" && m.src && m.src === p.cover) { out[0] = { thumb: p.thumb, dim: p.coverDim, ...m }; return; } // Titelbild mit Bildunterschrift
+      if (!hints && (k === "youtube" ? !youtubeId(m.id || m.url) : k === "vimeo" ? !m.id : k === "embed" ? !m.url : false)) return;
       out.push(m);
     });
     return out.length ? out : [{ type: "image", src: "" }];
   }
 
-  function embedHTML(url, label) {
+  function embedHTML(url, label, watchUrl, poster) {
+    const bg = poster ? ` embed__consent--poster" style="background-image:url('${esc(poster)}')` : "";
     if (!url) {
       return `<div class="embed"><div class="embed__consent">
         <span class="mono">${esc(label)}</span><small>Noch keine ${esc(label)}-ID bzw. URL in content.js eingetragen.</small></div></div>`;
     }
+    // YouTube verweigert eingebettete Videos auf Seiten, die als Datei (Doppelklick) geöffnet sind (Fehler 153)
+    if (watchUrl && location.protocol === "file:") {
+      return `<div class="embed"><div class="embed__consent${bg}">
+        <span class="mono">${esc(label)}</span>
+        <small>Eingebettete ${esc(label)}-Videos laufen nur auf der veröffentlichten Seite oder in der lokalen Vorschau (vorschau-starten.bat).</small>
+        <a class="embed__link mono" href="${esc(watchUrl)}" target="_blank" rel="noopener">Auf ${esc(label)} ansehen ↗</a>
+      </div></div>`;
+    }
     return `<div class="embed" data-src="${esc(url)}" data-title="${esc(label)}">
-      <button type="button" class="embed__consent" data-cursor="Abspielen">
-        <span class="embed__play" aria-hidden="true">▶</span>
-        <span class="mono">${esc(label)} laden</span>
-        <small>Beim Laden werden Daten (z. B. deine IP-Adresse) an ${esc(label)} übertragen.</small>
+      <button type="button" class="embed__consent${bg}" data-cursor="Abspielen" aria-label="${esc(label)}-Video abspielen">
+        <span class="embed__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+        ${poster ? "" : `<span class="mono">${esc(label)} laden</span>`}
+        <small>Beim Abspielen werden Daten (z. B. deine IP-Adresse) an ${esc(label)} übertragen.</small>
       </button></div>`;
   }
 
@@ -363,7 +486,8 @@
       case "video":
         return media(item.src, { seed, palette: p.palette, video: true, poster: item.poster });
       case "youtube":
-        return embedHTML(item.id && `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0`, "YouTube");
+        { const id = youtubeId(item.id || item.url);
+          return embedHTML(id && `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`, "YouTube", id && `https://www.youtube.com/watch?v=${id}`, item.poster); }
       case "vimeo":
         return embedHTML(item.id && `https://player.vimeo.com/video/${encodeURIComponent(item.id)}?autoplay=1&dnt=1`, "Vimeo");
       case "embed":
@@ -384,7 +508,7 @@
   function thumbHTML(item, i, p) {
     const k = kindOf(item);
     const seed = k === "compare" ? `${p.slug}-${i}b` : `${p.slug}-${i}`;
-    const src = k === "image" || k === "video" ? (item.thumb || item.poster || (k === "image" ? item.src : "")) : k === "compare" ? item.after : "";
+    const src = k === "compare" ? item.after : (item.thumb || item.poster || (k === "image" ? item.src : ""));
     const badge = BADGES[k] ? `<span class="pv__badge" aria-hidden="true">${BADGES[k]}</span>` : "";
     const label = item.caption || item.label || `Medium ${i + 1}`;
     return `<button type="button" class="pv__thumb" data-i="${i}" aria-label="${esc(label)} anzeigen" title="${esc(label)}">
@@ -393,14 +517,14 @@
 
   function projectHTML(p, idx) {
     const next = projects[(idx + 1) % projects.length];
-    const info = Object.entries(p.info || {});
+    const info = Object.entries(p.info || {}).filter(([, v]) => String(v ?? "").trim()); // leere Angaben ausblenden
     const texts = list(p.media).filter((m) => m && kindOf(m) === "text");
     const items = stageItems(p);
     const many = items.length > 1;
     return `
       <div class="pv${many ? "" : " pv--single"}">
         <header class="pv__head">
-          <div class="pv__meta mono"><b>${pad(idx + 1)}</b><span>${esc(p.category)}</span><span>${esc(p.year)}</span></div>
+          <div class="pv__meta mono"><b>${pad(idx + 1)}</b>${p.cats.map((c) => `<span>${esc(c)}</span>`).join("")}<span>${esc(p.year)}</span></div>
           <h1 class="pv__title" id="pTitle">${splitHTML(p.title)}</h1>
           ${p.subtitle ? `<p class="pv__sub">${esc(p.subtitle)}</p>` : ""}
         </header>
@@ -408,15 +532,19 @@
         <div class="pv__stagewrap">
           <div class="pv__stage" id="pStage"></div>
           <p class="pv__caption mono" id="pCaption"></p>
-          ${many ? `
-          <button type="button" class="pv__arrow pv__arrow--prev" data-step="-1" aria-label="Vorheriges Bild">←</button>
-          <button type="button" class="pv__arrow pv__arrow--next" data-step="1" aria-label="Nächstes Bild">→</button>` : ""}
         </div>
+
+        ${many ? `
+        <div class="pv__nav">
+          <button type="button" class="pv__step" data-step="-1" aria-label="Vorheriges Bild">←</button>
+          <span class="pv__count mono" id="pCount"></span>
+          <button type="button" class="pv__step" data-step="1" aria-label="Nächstes Bild">→</button>
+        </div>` : ""}
 
         ${many ? `<div class="pv__thumbs" id="pThumbs">${items.map((it, i) => thumbHTML(it, i, p)).join("")}</div>` : ""}
 
         <div class="pv__body">
-          ${list(p.description).map((t) => `<p class="pv__desc">${t}</p>`).join("")}
+          ${list(p.description).filter((t) => String(t).trim()).map((t) => `<p class="pv__desc">${t}</p>`).join("")}
           ${info.length ? `<dl class="pv__facts">${info.map(([k, v]) => `<div><dt class="mono">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
           ${texts.map((t) => `<div class="pv__text"><h3 class="mono">${esc(t.title)}</h3><p>${t.text || ""}</p></div>`).join("")}
           ${projects.length > 1 ? `
@@ -437,7 +565,9 @@
     const stage = $("#pStage", pScroll);
     stage.innerHTML = stageHTML(item, pv.i, pv.p);
     stage.dataset.kind = kindOf(item);
-    $("#pCaption", pScroll).textContent = [n > 1 ? `${pad(pv.i + 1)} / ${pad(n)}` : "", item.caption].filter(Boolean).join(" — ");
+    $("#pCaption", pScroll).textContent = item.caption || "";
+    const count = $("#pCount", pScroll);
+    if (count) count.textContent = `${pad(pv.i + 1)} / ${pad(n)}`;
     if (animate && !reduce()) {
       stage.firstElementChild?.animate([{ opacity: 0, transform: "scale(.985)" }, { opacity: 1, transform: "none" }],
         { duration: 500, easing: "cubic-bezier(.22,1,.36,1)" });
@@ -452,12 +582,109 @@
     });
   }
 
-  // Rechteck eines sichtbaren Elements als clip-path – für den "Aufzieh"-Effekt
-  function clipFrom(el) {
-    if (!el || !el.offsetParent) return null;
+  /* ---------- Übergang: das Kachelbild fliegt in die Projektansicht ----------
+     Ein "Flug"-Element startet exakt auf der angeklickten Kachel und wächst
+     stufenlos auf die Größe des Bildes in der Projektansicht. Beim Schließen
+     läuft es rückwärts. Der Rest der Ansicht blendet weich ein bzw. aus.
+     ------------------------------------------------------------------------- */
+  const FLIGHT_EASE = "cubic-bezier(.65,0,.25,1)";
+  const rectStyle = (r) => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+
+  // Sichtbares Bild-Element der Kachel (bzw. die schwebende Vorschau in der Listenansicht)
+  function flightSource(trigger) {
+    if (!trigger || !trigger.offsetParent) return null;
+    const el = trigger.classList.contains("row")
+      ? (preview.classList.contains("is-visible") ? preview.querySelector(".ph") : null)
+      : trigger.querySelector(".ph");
+    if (!el) return null;
     const r = el.getBoundingClientRect();
-    if (r.bottom < 0 || r.top > innerHeight || !r.width) return null;
-    return `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px round 4px)`;
+    return r.width > 2 && r.bottom > 0 && r.top < innerHeight ? { el, r } : null;
+  }
+
+  // Fläche, die ein Bild mit "object-fit: contain" in einer Box einnimmt
+  function containRect(box, dim) {
+    if (!dim || !dim[0] || !dim[1]) return box;
+    const ratio = dim[0] / dim[1];
+    let w = box.width, h = w / ratio;
+    if (h > box.height) { h = box.height; w = h * ratio; }
+    return { left: box.left + (box.width - w) / 2, top: box.top + (box.height - h) / 2, width: w, height: h };
+  }
+
+  // Flug-Element: zeigt sofort die (bereits geladene) Kachel, das große Bild blendet darüber ein
+  function makeFlight(rect, { bg, src, placeholder }) {
+    const f = document.createElement("div");
+    f.className = "flight";
+    if (placeholder) f.setAttribute("style", placeholder);
+    Object.assign(f.style, rectStyle(rect));
+    if (bg) f.style.backgroundImage = `url("${bg}")`;
+    if (src) {
+      const img = new Image();
+      img.alt = "";
+      img.decoding = "async";
+      img.addEventListener("load", () => img.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 120, fill: "forwards" }), { once: true });
+      img.src = src;
+      f.append(img);
+    }
+    document.body.append(f);
+    return f;
+  }
+
+  function flyIn(src, stage) {
+    const item = pv.items[0];
+    const isImg = kindOf(item) === "image" && item.src;
+    const to = containRect(stage.getBoundingClientRect(), isImg ? item.dim : null);
+    const shown = src.el.querySelector("img"); // genau das Bild, das auf der Kachel zu sehen ist
+    const f = makeFlight(src.r, { bg: isImg && (shown ? shown.getAttribute("src") : current.thumb), src: isImg && item.src, placeholder: !isImg && src.el.getAttribute("style") });
+    stage.style.opacity = "0";
+    src.el.style.visibility = "hidden";
+    let done = false;
+    const land = () => {
+      if (done) return;
+      done = true;
+      stage.style.opacity = "";
+      src.el.style.visibility = "";
+      f.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" }).onfinish = () => f.remove();
+      setTimeout(() => f.remove(), 400); // aufräumen, auch wenn der Browser Animationen pausiert
+    };
+    f.animate([rectStyle(src.r), rectStyle(to)], { duration: 760, easing: FLIGHT_EASE, fill: "forwards" }).onfinish = land;
+    setTimeout(land, 1300); // Sicherheitsnetz
+  }
+
+  function flyOut(p, targetPh) {
+    const stage = $("#pStage", pScroll);
+    const item = pv && pv.items[0];
+    const isImg = item && kindOf(item) === "image" && item.src && stage.querySelector(".ph.is-loaded");
+    const from = containRect(stage.getBoundingClientRect(), isImg ? item.dim : null);
+    const to = targetPh.getBoundingClientRect();
+    const shown = targetPh.querySelector("img");
+    const f = makeFlight(from, { bg: isImg && (shown ? shown.getAttribute("src") : p.thumb), placeholder: !isImg && targetPh.getAttribute("style") });
+    if (isImg) { // großes Bild beim Landen in die Kachel überblenden
+      const img = new Image();
+      img.alt = "";
+      img.src = item.src;
+      img.style.opacity = "1";
+      f.append(img);
+      img.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 380, fill: "forwards" });
+    }
+    stage.style.opacity = "0";
+    targetPh.style.visibility = "hidden";
+    let done = false;
+    const land = () => {
+      if (done) return;
+      done = true;
+      targetPh.style.visibility = "";
+      f.remove();
+    };
+    f.animate([rectStyle(from), rectStyle(to)], { duration: 680, easing: FLIGHT_EASE, fill: "forwards" }).onfinish = land;
+    setTimeout(land, 1200);
+  }
+
+  // Titel, Text, Pfeile und Vorschaubilder gleiten leicht versetzt herein
+  function revealParts(delay) {
+    $$(".pv__head, .pv__body, .pv__nav, .pv__thumbs", pScroll).forEach((el, i) => {
+      el.animate([{ opacity: 0, transform: "translateY(14px)" }, { opacity: 1, transform: "none" }],
+        { duration: 600, delay: delay + i * 70, easing: "cubic-bezier(.22,1,.36,1)", fill: "backwards" });
+    });
   }
 
   function openProject(p) {
@@ -468,14 +695,12 @@
     const idx = projects.indexOf(p);
     const n = projects.length;
     $("#pCounter").textContent = `${pad(idx + 1)} / ${pad(n)} — ${p.title}`;
-    $("#pPrev").href = `#/projekt/${projects[(idx - 1 + n) % n].slug}`;
-    $("#pNext").href = `#/projekt/${projects[(idx + 1) % n].slug}`;
-    $("#pPrev").hidden = $("#pNext").hidden = n < 2;
     pScroll.innerHTML = projectHTML(p, idx);
     pScroll.scrollTop = 0;
     pv = { p, items: stageItems(p), i: 0 };
     setStage(0, false);
     document.title = `${p.title} — ${fullName || baseTitle}`;
+    const src = flightSource(lastTrigger); // vor dem Einblenden messen
     preview.classList.remove("is-visible");
     closeLightbox();
 
@@ -490,8 +715,11 @@
     projEl.hidden = false;
     root.classList.add("is-locked");
     if (!reduce()) {
-      const from = clipFrom(lastTrigger) || "inset(100% 0% 0% 0% round 0px)";
-      projEl.animate([{ clipPath: from }, { clipPath: FULL }], { duration: 850, easing: "cubic-bezier(.76,0,.24,1)" });
+      projEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 480, easing: "cubic-bezier(.33,1,.68,1)" });
+      const stage = $("#pStage", pScroll);
+      if (src) flyIn(src, stage);
+      else stage.animate([{ opacity: 0, transform: "scale(.97)" }, { opacity: 1, transform: "none" }], { duration: 700, delay: 120, easing: "cubic-bezier(.22,1,.36,1)", fill: "backwards" });
+      revealParts(220);
     }
     show();
     $("#pClose").focus({ preventScroll: true });
@@ -504,21 +732,24 @@
     closeLightbox();
     const target = $$(`[data-slug="${CSS.escape(p.slug)}"]`, document.querySelector("main")).find((el) => el.offsetParent);
     const finish = () => {
-      closeAnim = null;
       if (current || projEl.hidden) return; // inzwischen wurde ein anderes Projekt geöffnet
       projEl.hidden = true;
       projEl.classList.remove("is-shown");
       pScroll.innerHTML = "";
       pv = null;
       root.classList.remove("is-locked");
+      if (closeAnim) { closeAnim.cancel(); closeAnim = null; }
     };
     root.classList.remove("is-locked");
     if (reduce()) finish();
     else {
-      closeAnim = projEl.animate([{ clipPath: FULL }, { clipPath: clipFrom(target) || "inset(100% 0% 0% 0% round 0px)" }],
-        { duration: 700, easing: "cubic-bezier(.76,0,.24,1)" });
+      // zurück in die Kachel fliegen – nur vom Titelbild aus und wenn die Kachel sichtbar ist
+      const targetPh = target && target.classList.contains("card") ? target.querySelector(".ph") : null;
+      const tr = targetPh && targetPh.getBoundingClientRect();
+      if (pv && pv.i === 0 && tr && tr.bottom > 0 && tr.top < innerHeight) flyOut(p, targetPh);
+      closeAnim = projEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, easing: "cubic-bezier(.32,0,.67,0)", fill: "forwards" });
       closeAnim.onfinish = finish;
-      setTimeout(finish, 1000); // Sicherheitsnetz, falls der Browser Animationen drosselt
+      setTimeout(finish, 900); // Sicherheitsnetz, falls der Browser Animationen drosselt
     }
     (target || lastTrigger)?.focus({ preventScroll: true });
   }
@@ -555,12 +786,34 @@
   addEventListener("hashchange", route);
   $("#pClose").addEventListener("click", requestClose);
 
-  // Klicks in der Projektansicht: Vorschaubild wählen, blättern, Embeds laden, vergrößern
+  // Klick auf die freie Fläche links/rechts neben Bild und Text?
+  function onEmptySide(e) {
+    const pvEl = $(".pv", pScroll);
+    if (!pvEl || (e.target !== pvEl && e.target !== pScroll)) return false;
+    const rects = $$(".pv__head, .pv__stagewrap, .pv__nav, .pv__thumbs, .pv__body", pvEl).map((el) => el.getBoundingClientRect());
+    return e.clientX < Math.min(...rects.map((r) => r.left)) - 8 || e.clientX > Math.max(...rects.map((r) => r.right)) + 8;
+  }
+
+  // Cursor zeigt „Schließen“ über der freien Fläche
+  let overEmpty = false;
+  pScroll.addEventListener("pointermove", (e) => {
+    if (!fine) return;
+    if (e.target !== pScroll && !e.target.classList.contains("pv")) { overEmpty = false; return; }
+    const out = onEmptySide(e);
+    if (out !== overEmpty) {
+      cursorLabel.textContent = out ? "Schließen" : "";
+      cursor.classList.toggle("is-label", out);
+    }
+    overEmpty = out;
+  });
+
+  // Klicks in der Projektansicht: schließen, Vorschaubild wählen, blättern, Embeds laden, vergrößern
   pScroll.addEventListener("click", (e) => {
+    if (onEmptySide(e)) { requestClose(); return; }
     const thumb = e.target.closest(".pv__thumb");
     if (thumb) { setStage(+thumb.dataset.i); return; }
-    const arrow = e.target.closest(".pv__arrow");
-    if (arrow) { setStage(pv.i + +arrow.dataset.step); return; }
+    const step = e.target.closest(".pv__step");
+    if (step) { setStage(pv.i + +step.dataset.step); return; }
     const consent = e.target.closest("button.embed__consent");
     if (consent) {
       const box = consent.parentElement;
@@ -569,6 +822,7 @@
       f.title = box.dataset.title;
       f.allow = "autoplay; fullscreen; picture-in-picture; xr-spatial-tracking";
       f.allowFullscreen = true;
+      f.referrerPolicy = "strict-origin-when-cross-origin"; // YouTube braucht die Herkunft der Seite (sonst Fehler 153)
       box.replaceChildren(f);
       return;
     }
@@ -665,7 +919,7 @@
       if (!label && t.matches(".pv__stage .ph.is-loaded > img") && !t.closest(".compare")) label = "Zoom";
       cursorLabel.textContent = label || "";
       cursor.classList.toggle("is-label", !!label);
-      cursor.classList.toggle("is-hover", !label && !!t.closest("a, button, [data-cursor-hover], .chips li"));
+      cursor.classList.toggle("is-hover", !label && !!t.closest("a, button, [data-cursor-hover]"));
     });
     document.addEventListener("pointerleave", () => cursor.classList.add("is-hidden"));
     document.addEventListener("pointerenter", () => cursor.classList.remove("is-hidden"));

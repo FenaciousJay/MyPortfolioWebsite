@@ -7,7 +7,6 @@
   <meta name="description" content="Portfolio">
   <meta name="theme-color" content="#0c0c0d">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="assets/fonts/instrument-serif-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -29,26 +28,25 @@
   <main id="top">
     <!-- Hero -->
     <section class="hero" aria-label="Einleitung">
-      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__light" aria-hidden="true"><div class="hero__glow"></div></div>
       <div class="hero__top mono">
         <span>Portfolio — <span id="year"></span></span>
         <span class="hero__status" id="status"><i></i><span data-bind="availableText"></span></span>
       </div>
       <h1 class="hero__name">
         <span class="hero__line" id="firstName"></span>
-        <span class="hero__line hero__line--italic" id="lastName"></span>
+        <span class="hero__line hero__line--indent" id="lastName"></span>
       </h1>
       <div class="hero__bottom">
         <p class="hero__role"><span data-bind="role"></span><br><span class="muted">aus <span data-bind="location"></span></span></p>
         <p class="hero__intro" data-bind="intro"></p>
-        <a class="hero__scroll mono" href="#arbeiten" aria-label="Zu den Arbeiten scrollen"><span>Scroll</span><i></i></a>
       </div>
     </section>
 
     <!-- Arbeiten -->
     <section class="section work" id="arbeiten">
       <div class="section__head">
-        <h2 class="section__title reveal">Ausgewählte <em>Arbeiten</em> <sup class="mono" id="workCount"></sup></h2>
+        <h2 class="section__title reveal">Projekte</h2>
         <div class="work__controls reveal">
           <div class="filters" id="filters" role="group" aria-label="Nach Kategorie filtern"></div>
           <div class="viewtoggle" role="group" aria-label="Ansicht">
@@ -67,7 +65,7 @@
 
     <!-- Über mich -->
     <section class="section about" id="ueber-mich">
-      <div class="section__head"><h2 class="section__title reveal">Über <em>mich</em></h2></div>
+      <div class="section__head"><h2 class="section__title reveal">Über mich</h2></div>
       <div class="about__grid">
         <figure class="about__portrait reveal" id="portrait"></figure>
         <div class="about__body">
@@ -86,14 +84,14 @@
 
     <!-- Werdegang -->
     <section class="section cv" id="werdegang">
-      <div class="section__head"><h2 class="section__title reveal">Werde<em>gang</em></h2></div>
+      <div class="section__head"><h2 class="section__title reveal">Werdegang</h2></div>
       <div id="timeline"></div>
     </section>
 
     <!-- Kontakt -->
     <section class="section contact" id="kontakt">
       <p class="mono label reveal">Kontakt</p>
-      <h2 class="contact__title reveal">Lass uns etwas <em>Besonderes</em> gestalten.</h2>
+      <!-- <h2 class="contact__title reveal">Ich freue mich Sie kennen zu lernen!</h2> -->
       <button type="button" class="contact__mail reveal" id="mail" data-cursor="Kopieren">
         <span data-bind="email"></span>
       </button>
@@ -105,8 +103,11 @@
   <footer class="footer">
     <span class="mono">© <span id="footYear"></span> <span data-bind="fullName"></span></span>
     <nav class="mono" aria-label="Rechtliches">
+      <!-- Vorübergehend ausgeblendet – die Seiten impressum.html / datenschutz.html existieren weiter.
+           Zum Wieder-Einblenden einfach die Kommentarzeichen um diese zwei Links entfernen.
       <a href="impressum.html">Impressum</a>
       <a href="datenschutz.html">Datenschutz</a>
+      -->
       <a href="#top">Nach oben ↑</a>
     </nav>
   </footer>
@@ -115,11 +116,7 @@
   <div class="project" id="project" role="dialog" aria-modal="true" aria-labelledby="pTitle" hidden>
     <div class="project__bar">
       <span class="mono" id="pCounter"></span>
-      <div class="project__actions">
-        <a class="project__step" id="pPrev" href="#" aria-label="Vorheriges Projekt">←</a>
-        <a class="project__step" id="pNext" href="#" aria-label="Nächstes Projekt">→</a>
-        <button type="button" class="project__close mono" id="pClose" data-cursor-hover>Schließen <span aria-hidden="true">✕</span></button>
-      </div>
+      <button type="button" class="project__close mono" id="pClose" data-cursor-hover>Schließen <span aria-hidden="true">✕</span></button>
     </div>
     <div class="project__scroll" id="pScroll"></div>
   </div>
@@ -139,8 +136,11 @@
   <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
   <div class="grain" aria-hidden="true"></div>
 
+  <script>/* merkt sich Tippfehler in content.js, damit die Seite die Zeile anzeigen kann */
+    addEventListener("error", function (e) { if (/content\.js$/.test(e.filename || "")) window.CONTENT_ERROR = { line: e.lineno, msg: e.message }; });</script>
   <script src="content.js"></script>
   <script src="media.js"></script>
   <script src="assets/js/main.js"></script>
+  <script src="assets/js/wireframe.js"></script>
 </body>
 </html>

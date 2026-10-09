@@ -22,8 +22,10 @@ portfolio/
 ## Bilder & Videos hinzufügen
 
 1. Leg die Originale in `media-original/projekte/<Projektname>/`.
-   Der Ordner heißt wie der `slug` oder der `title` des Projekts in `content.js`.
+   **Der Ordnername wird zum Projekttitel** (z. B. „Spaceship on patrol“) – in `content.js` kannst du ihn ändern.
    Für jedes Projekt aus `content.js` legt das Skript den Ordner automatisch an.
+   Ordner umbenennen ist kein Problem: Das Skript erkennt den Ordner an seinen Dateien wieder
+   und passt `slug` (und einen noch unveränderten Titel) in `content.js` an, damit die Texte am Projekt bleiben.
 2. Benenne die Dateien mit einer Nummer vorne:
 
    | Dateiname                  | Wirkung                                             |
@@ -42,8 +44,11 @@ portfolio/
    - zeigt Hinweise, z. B. bei zu großen Videos.
 4. `index.html` öffnen und prüfen, dann hochladen (siehe unten).
 
-Ein Ordner, zu dem es in `content.js` noch kein Projekt gibt, erscheint automatisch auf der Seite
-(mit dem Ordnernamen als Titel). Texte ergänzt du dann in `content.js` mit dem angezeigten `slug`.
+Für einen Ordner, zu dem es in `content.js` noch kein Projekt gibt, legt das Skript dort automatisch
+ein Grundgerüst an (Titel, Jahr, leere Felder für Unterzeile, Kategorie, Rolle, Software, Beschreibung).
+Du musst es nur noch ausfüllen; leere Felder werden auf der Seite nicht angezeigt.
+Vor jeder Änderung an `content.js` speichert das Skript eine Sicherung in `tools/content-sicherung.js`.
+Ordner mit reinen Kurznamen (z. B. `night-shift`) behalten den `title` aus `content.js`.
 
 **Porträt & Lebenslauf:** ein Bild und ein PDF in `media-original/ueber-mich/` legen.
 
@@ -56,7 +61,11 @@ Wenn alles gefüllt ist, dort `showPlaceholderHints: false` setzen.
 
 ## Lokal ansehen
 
-Doppelklick auf `index.html` reicht. Wenn du einen kleinen lokalen Server willst:
+**Doppelklick auf `vorschau-starten.bat`** – startet eine lokale Vorschau und öffnet den Browser.
+Dort verhält sich die Seite wie online (z. B. laufen YouTube-Videos). Beenden: Fenster schließen.
+
+Ein Doppelklick auf `index.html` geht auch, dann spielen eingebettete YouTube-Videos aber nicht ab
+(YouTube verlangt eine echte Webadresse). Alternativ mit Python:
 
 ```bash
 python -m http.server 8766
@@ -93,4 +102,4 @@ einen CNAME-Eintrag auf `<dein-benutzername>.github.io` setzen.
 
 - Akzentfarbe: `accent` in `content.js`
 - Hintergrund-/Textfarben: ganz oben in `assets/css/style.css` unter `:root`
-- Schriften: Instrument Serif, Inter, JetBrains Mono (alle SIL Open Font License, lokal eingebunden)
+- Schriften: Inter (inkl. Kursiv) und JetBrains Mono – beide SIL Open Font License, lokal eingebunden
